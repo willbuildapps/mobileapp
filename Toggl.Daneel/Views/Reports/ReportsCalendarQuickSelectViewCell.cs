@@ -43,7 +43,7 @@ namespace Toggl.Daneel.Views.Reports
                     Color.ReportsCalendar.QuickSelect.UnselectedTitle.ToNativeColor()
                 );
 
-                var bindingSet = this.CreateBindingSet<ReportsCalendarQuickSelectViewCell, ReportsCalendarBaseQuickSelectShortcut>();
+                var bindingSet = this.CreateBindingSet<ReportsCalendarQuickSelectViewCell, QuickSelectShortcut>();
 
                 //Text
                 bindingSet.Bind(TitleLabel).To(vm => vm.Title);
