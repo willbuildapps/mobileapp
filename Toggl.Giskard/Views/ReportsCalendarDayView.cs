@@ -68,6 +68,11 @@ namespace Toggl.Giskard.Views
         {
         }
 
+        public ReportsCalendarDayView(Context context)
+            : this(context, null)
+        {
+        }
+
         public ReportsCalendarDayView(Context context, IAttributeSet attrs)
             : this(context, attrs, 0)
         {
