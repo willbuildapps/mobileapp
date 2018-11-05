@@ -21,12 +21,12 @@
             android:layout_marginTop="-500dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />         
+        
+        <android.support.v7.widget.RecyclerView
             android:id="@+id/ReportsActivityRecyclerView"
-            local:MvxBind="ViewModel .; ItemsSource Segments"
             android:scrollbars="none"
             android:paddingBottom="64dp"
             android:clipToPadding="false"
-            local:MvxTemplateSelector="@string/ReportsTemplateSelector"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </com.toggl.giskard.ReportsLinearLayout>
@@ -39,7 +39,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            local:MvxBind="Text CurrentDateRangeString; Click ToggleCalendarCommand"
+            android:id="@+id/ToolbarCurrentDateRangeText"
             tools:text="Last week"
             android:padding="16dp"
             android:textSize="19sp"

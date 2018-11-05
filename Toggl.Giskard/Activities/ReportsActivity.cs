@@ -1,5 +1,6 @@
-﻿using System;
+﻿﻿using System;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -9,9 +10,11 @@ using MvvmCross.Platforms.Android.Presenters.Attributes;
 using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels.Reports;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Giskard.Adapters;
 using Toggl.Giskard.Extensions.Reactive;
 using Toggl.Giskard.Views;
 using Toggl.Multivac.Extensions;
+using Toolbar = Android.Support.V7.Widget.Toolbar;
 
 namespace Toggl.Giskard.Activities
 {
@@ -19,12 +22,9 @@ namespace Toggl.Giskard.Activities
     [Activity(Theme = "@style/AppTheme",
               ScreenOrientation = ScreenOrientation.Portrait,
               ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
-    public sealed partial class ReportsActivity : MvxAppCompatActivity<ReportsViewModel>
+    public sealed partial class ReportsActivity : ReactiveActivity<ReportsViewModel>
     {
-        private ReportsRecyclerView reportsRecyclerView;
-        private ReportsLinearLayout reportsMainContainer;
-
-        public CompositeDisposable DisposeBag { get; } = new CompositeDisposable();
+        private static readonly TimeSpan toggleCalendarThrottleDuration = TimeSpan.FromMilliseconds(300);
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -32,10 +32,7 @@ namespace Toggl.Giskard.Activities
             SetContentView(Resource.Layout.ReportsActivity);
             OverridePendingTransition(Resource.Animation.abc_slide_in_right, Resource.Animation.abc_fade_out);
 
-            reportsRecyclerView = FindViewById<ReportsRecyclerView>(Resource.Id.ReportsActivityRecyclerView);
-            reportsMainContainer = FindViewById<ReportsLinearLayout>(Resource.Id.ReportsActivityMainContainer);
-
-            initializeViews();
+            InitializeViews();
 
             selectWorkspaceFAB.Rx().Tap()
                 .Subscribe(ViewModel.SelectWorkspace)
@@ -45,7 +42,26 @@ namespace Toggl.Giskard.Activities
                 .Subscribe(workspaceName.Rx().TextObserver())
                 .DisposedBy(DisposeBag);
 
+            calendarView.SetupWith(ViewModel.CalendarViewModel);
+
+            setupReportsRecyclerView();
             setupToolbar();
+
+            ViewModel.CurrentDateRangeStringObservable
+                .Subscribe(toolbarCurrentDateRangeText.Rx().TextObserver())
+                .DisposedBy(DisposeBag);
+
+            toolbarCurrentDateRangeText.Rx().Tap()
+                .Throttle(toggleCalendarThrottleDuration)
+                .VoidSubscribe(ViewModel.ToggleCalendar)
+                .DisposedBy(DisposeBag);
+        }
+
+        private void setupReportsRecyclerView()
+        {
+            var reportsAdapter = new ReportsRecyclerAdapter(this, ViewModel);
+            reportsRecyclerView.SetLayoutManager(new LinearLayoutManager(this));
+            reportsRecyclerView.SetAdapter(reportsAdapter);
         }
 
         public override void OnEnterAnimationComplete()
@@ -62,7 +78,6 @@ namespace Toggl.Giskard.Activities
 
         private void setupToolbar()
         {
-            var toolbar = FindViewById<Toolbar>(Resource.Id.Toolbar);
             toolbar.Title = "";
             SetSupportActionBar(toolbar);
 
@@ -71,6 +86,7 @@ namespace Toggl.Giskard.Activities
 
             toolbar.NavigationClick += onNavigateBack;
         }
+
         private void onNavigateBack(object sender, Toolbar.NavigationClickEventArgs e)
         {
             Finish();
@@ -79,11 +95,6 @@ namespace Toggl.Giskard.Activities
         internal void ToggleCalendarState(bool forceHide)
         {
             reportsMainContainer.ToggleCalendar(forceHide);
-        }
-
-        internal void RecalculateCalendarHeight()
-        {
-            reportsMainContainer.RecalculateCalendarHeight();
         }
     }
 }

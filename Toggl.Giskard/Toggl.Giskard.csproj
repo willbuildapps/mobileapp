@@ -322,6 +322,7 @@
     <Compile Include="ViewHolders\GuardedMvxRecyclerViewHolder.cs" />
     <Compile Include="ViewHolders\ReportsCalendarShortcutCellViewHolder.cs" />
     <Compile Include="ViewHolders\ReportsHeaderCellViewHolder.cs" />
+    <Compile Include="ViewHolders\ReportsItemCellViewHolder.cs" />
     <Compile Include="ViewHolders\ReportsWorkspaceNameViewHolder.cs" />
     <Compile Include="Views\ReportsCalendarView.cs" />
     <Compile Include="Views\SelectProjectRecyclerView.cs" />
@@ -395,7 +396,6 @@
     <Compile Include="Converters\ReportTimeSpanLabelValueConverter.cs" />
     <Compile Include="Bindings\ViewWidthPercentageTargetBinding.cs" />
     <Compile Include="Views\PieChartView.cs" />
-    <Compile Include="Views\ReportsRecyclerViewHolder.cs" />
     <Compile Include="Startup\TogglBindingBuilder.cs" />
     <Compile Include="Views\ReportsLinearLayout.cs" />
     <Compile Include="Views\ReportsCalendarDayView.cs" />
