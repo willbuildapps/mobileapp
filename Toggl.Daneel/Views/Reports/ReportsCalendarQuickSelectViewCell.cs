@@ -5,6 +5,7 @@ using MvvmCross.Platforms.Ios.Binding.Views;
 using MvvmCross.Plugin.Color.Platforms.Ios;
 using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels.ReportsCalendar.QuickSelectShortcuts;
 using UIKit;
 

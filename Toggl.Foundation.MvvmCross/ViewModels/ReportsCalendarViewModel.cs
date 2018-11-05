@@ -16,7 +16,6 @@ using Toggl.Foundation.DataSources;
 using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.ViewModels.ReportsCalendar;
-using Toggl.Foundation.MvvmCross.ViewModels.ReportsCalendar.QuickSelectShortcuts;
 using Toggl.Foundation.MvvmCross.Services;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
@@ -48,7 +47,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Resources.SaturdayInitial
         };
 
-        private bool isInitialized;
         private CalendarMonth initialMonth;
         private CompositeDisposable disposableBag;
         private ReportsCalendarDayViewModel startOfSelection;
@@ -83,7 +81,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IObservable<IImmutableList<string>> DayHeaders { get; }
         public IObservable<ReportsDateRangeParameter> SelectedDateRangeObservable { get; }
 
-        public IObservable<IImmutableList<QuickSelectShortcut>> QuickSelectShortcuts { get; }
+        [Obsolete("Use QuickSelectShortcutsObservable instead")]
+        public IImmutableList<QuickSelectShortcut> QuickSelectShortcuts => QuickSelectShortcutsObservable.LastOrDefault();
+        public IObservable<IImmutableList<QuickSelectShortcut>> QuickSelectShortcutsObservable { get; }
 
         [Obsolete("Use CalendarDayTapped instead")]
         public IMvxAsyncCommand<ReportsCalendarDayViewModel> CalendarDayTappedCommand { get; }
@@ -109,11 +109,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.schedulerProvider = schedulerProvider;
             this.intentDonationService = intentDonationService;
 
-            CalendarDayTappedCommand = new MvxAsyncCommand<ReportsCalendarDayViewModel>(calendarDayTapped);
-            QuickSelectCommand = new MvxCommand<QuickSelectShortcut>(quickSelect);
+            CalendarDayTappedCommand = new MvxAsyncCommand<ReportsCalendarDayViewModel>(CalendarDayTapped);
+            QuickSelectCommand = new MvxCommand<QuickSelectShortcut>(QuickSelect);
 
             var currentDate = timeService.CurrentDateTime;
-            initialMonth = new CalendarMonth(currentDate.Year, currentDate.Month).AddMonths(-MonthsToShow + 1);]
+            initialMonth = new CalendarMonth(currentDate.Year, currentDate.Month).AddMonths(-MonthsToShow + 1);
 
             calendarDisposeBag = new CompositeDisposable();
             shortcutDisposeBag = new CompositeDisposable();
@@ -149,7 +149,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .SelectUnit()
                 .AsDriver(schedulerProvider);
 
-            QuickSelectShortcuts = beginningOfWeekObservable
+            QuickSelectShortcutsObservable = beginningOfWeekObservable
                 .Select(createQuickSelectShortcuts)
                 .AsDriver(schedulerProvider);
 
@@ -211,6 +211,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
+        public override void ViewAppearing()
+        {
+            base.ViewAppearing();
+            changeDateRange(weeklyQuickSelectShortcut.DateRange);
+        }
+
         public void QuickSelect(QuickSelectShortcut quickSelectShortCut)
         {
             intentDonationService.DonateShowReport(quickSelectShortCut.Period);
@@ -254,55 +260,19 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        private async Task calendarDayTapped(ReportsCalendarDayViewModel tappedDay)
-        {
-            await CalendarDayTapped(tappedDay);
-        }
-
-        public override void Prepare()
-        {
-            base.Prepare();
-
-            var now = timeService.CurrentDateTime;
-            initialMonth = new CalendarMonth(now.Year, now.Month).AddMonths(-(MonthsToShow - 1));
-        }
-
-        public override async Task Initialize()
-        {
-            await base.Initialize();
-
-            BeginningOfWeek = (await dataSource.User.Current.FirstAsync()).BeginningOfWeek;
-            RaisePropertyChanged(nameof(CurrentMonth));
-
-            //QuickSelectShortcuts = createQuickSelectShortcuts();
-
-            //QuickSelectShortcuts
-                //.Select(quickSelectShortcut => SelectedDateRangeObservable.Subscribe(
-                    //quickSelectShortcut.OnDateRangeChanged))
-                //.ForEach(disposableBag.Add);
-
-            var initialShortcut = QuickSelectShortcuts.LastOrDefault().Single(shortcut => shortcut.Period == reportPeriod);
-            changeDateRange(initialShortcut.DateRange.WithSource(ReportsSource.Initial));
-            isInitialized = true;
-        }
-
         public void OnToggleCalendar() => selectStartOfSelectionIfNeeded();
 
         public void OnHideCalendar() => selectStartOfSelectionIfNeeded();
 
         [Obsolete("Use the DayHeaders observable instead")]
         public string DayHeaderFor(int index)
-            => DayHeaders.LastOrDefault()[(index + (int)BeginningOfWeek + 7) % 7];
+            => DayHeaders.LastOrDefault()[index];
 
         public void SelectPeriod(ReportPeriod period)
         {
             reportPeriod = period;
-
-            if (isInitialized)
-            {
-                var initialShortcut = QuickSelectShortcuts.LastOrDefault().Single(shortcut => shortcut.Period == period);
-                changeDateRange(initialShortcut.DateRange.WithSource(ReportsSource.Initial));
-            }
+            var initialShortcut = QuickSelectShortcuts.Single(shortcut => shortcut.Period == period);
+            changeDateRange(initialShortcut.DateRange.WithSource(ReportsSource.Initial));
         }
 
         private void selectStartOfSelectionIfNeeded()
@@ -319,18 +289,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void changeDateRange(ReportsDateRangeParameter newDateRange)
         {
             startOfSelection = null;
-            highlightDateRange(newDateRange);
+            highlightedDateRangeSubject.OnNext(newDateRange);
             selectedDateRangeSubject.OnNext(newDateRange);
-        }
-
-        private void quickSelect(QuickSelectShortcut quickSelectShortCut)
-        {
-            QuickSelect(quickSelectShortCut);
-        }
-
-        private void highlightDateRange(ReportsDateRangeParameter dateRange)
-        {
-            Months.ForEach(month => month.Days.ForEach(day => day.OnSelectedRangeChanged(dateRange)));
         }
     }
 }
