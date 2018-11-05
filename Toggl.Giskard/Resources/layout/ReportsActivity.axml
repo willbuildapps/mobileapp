@@ -14,13 +14,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="?attr/actionBarSize">
-        <FrameLayout
-            android:id="@+id/ReportsCalendarContainer"
-            android:background="@color/toolbarBlack"
+        
+        <toggl.giskard.views.ReportsCalendarView
+            android:id="@+id/ReportsActivityCalendarView"
+            android:orientation="vertical"
             android:layout_marginTop="-500dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <toggl.giskard.views.ReportsRecyclerView
+            android:layout_height="wrap_content" />         
             android:id="@+id/ReportsActivityRecyclerView"
             local:MvxBind="ViewModel .; ItemsSource Segments"
             android:scrollbars="none"
