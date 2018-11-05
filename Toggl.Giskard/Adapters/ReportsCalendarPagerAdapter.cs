@@ -2,6 +2,7 @@
 using Android.Content;
 using Android.Runtime;
 using Android.Support.V4.View;
+using Android.Support.V7.Widget;
 using Android.Views;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Giskard.Views;
@@ -15,10 +16,7 @@ namespace Toggl.Giskard.Adapters
 
         private readonly Context context;
         private readonly ReportsCalendarViewModel viewModel;
-
-        static ReportsCalendarPagerAdapter()
-        {
-        }
+        private readonly RecyclerView.RecycledViewPool recyclerviewPool = new RecyclerView.RecycledViewPool();
 
         public ReportsCalendarPagerAdapter(Context context, ReportsCalendarViewModel viewModel)
         {
@@ -31,7 +29,6 @@ namespace Toggl.Giskard.Adapters
         {
         }
 
-
         public override int Count => viewModel.Months.Count;
 
         public override Object InstantiateItem(ViewGroup container, int position)
@@ -40,9 +37,13 @@ namespace Toggl.Giskard.Adapters
             var inflatedView = inflater.Inflate(Resource.Layout.ReportsCalendarFragmentPage, container, false);
 
             var calendarRecyclerView = (ReportsCalendarRecyclerView)inflatedView;
-            calendarRecyclerView.ItemClick = viewModel.CalendarDayTappedCommand;
-            calendarRecyclerView.ItemsSource = viewModel.Months[position].Days;
-            calendarRecyclerView.GetAdapter().NotifyItemRangeChanged(0, viewModel.Months[position].Days.Count);
+            calendarRecyclerView.SetRecycledViewPool(recyclerviewPool);
+            calendarRecyclerView.SetLayoutManager(new ReportsCalendarLayoutManager(context));
+            var adapter = new ReportsCalendarRecyclerAdapter
+            {
+                Items = viewModel.Months[position].Days
+            };
+            calendarRecyclerView.SetAdapter(adapter);
             container.AddView(inflatedView);
 
             return inflatedView;
