@@ -320,6 +320,9 @@
     <Compile Include="ViewHolders\MainLogSuggestionItemViewHolder.cs" />
     <Compile Include="ViewHolders\MainLogSuggestionsListViewHolder.cs" />
     <Compile Include="ViewHolders\GuardedMvxRecyclerViewHolder.cs" />
+    <Compile Include="ViewHolders\ReportsCalendarShortcutCellViewHolder.cs" />
+    <Compile Include="ViewHolders\ReportsHeaderCellViewHolder.cs" />
+    <Compile Include="ViewHolders\ReportsWorkspaceNameViewHolder.cs" />
     <Compile Include="Views\ReportsCalendarView.cs" />
     <Compile Include="Views\SelectProjectRecyclerView.cs" />
     <Compile Include="Adapters\MainRecyclerAdapter.cs" />
@@ -388,7 +391,6 @@
     <Compile Include="Extensions\ViewExtensions.cs" />
     <Compile Include="TemplateSelectors\ReportsTemplateSelector.cs" />
     <Compile Include="Activities\ReportsActivity.cs" />
-    <Compile Include="Views\ReportsRecyclerView.cs" />
     <Compile Include="Converters\ReportPercentageLabelValueConverter.cs" />
     <Compile Include="Converters\ReportTimeSpanLabelValueConverter.cs" />
     <Compile Include="Bindings\ViewWidthPercentageTargetBinding.cs" />
