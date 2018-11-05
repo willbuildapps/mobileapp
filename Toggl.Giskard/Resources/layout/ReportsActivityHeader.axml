@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
     <android.support.v7.widget.CardView
-        local:MvxBind="Click HideCalendarCommand"
+        android:id="@+id/SummaryCard"    
         android:elevation="2dp"
         local:cardBackgroundColor="@android:color/white"
         android:layout_height="114dp"
@@ -31,7 +31,6 @@
                 android:layout_height="wrap_content" />
             <TextView
                 android:id="@+id/ReportsSummaryTotal"
-                local:MvxBind="TextFormatted ReportTimeSpanLabel(TotalTime)"
                 tools:text="104:23:12"
                 tools:textColor="#1ad180"
                 android:textSize="24sp"
@@ -40,7 +39,7 @@
                 android:layout_below="@+id/ReportsSummaryTotalLabel"
                 android:layout_alignStart="@+id/ReportsSummaryTotalLabel" />
             <ImageView
-                local:MvxBind="DrawableColor ReportsChartColor(TotalTimeIsZero)"
+                android:id="@+id/ReportsTotalChartImageView"    
                 android:scaleType="fitStart"
                 android:src="@drawable/reports_total_chart"
                 android:layout_height="22dp"
@@ -69,7 +68,6 @@
                 android:layout_toRightOf="@+id/ReportsSummaryCenterView" />
             <TextView
                 android:id="@+id/ReportsSummaryBillable"
-                local:MvxBind="TextFormatted ReportPercentageLabel(BillablePercentage)"
                 tools:text="86%"
                 android:textSize="24sp"
                 android:textStyle="normal"
@@ -88,7 +86,7 @@
                 android:layout_below="@+id/ReportsSummaryBillable"
                 android:layout_alignStart="@+id/ReportsSummaryBillable">
                 <View
-                    local:MvxBind="WidthPercentage BillablePercentage"
+                    android:id="@+id/BillablePercentageView"
                     android:background="#328FFF"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -99,7 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <android.support.v7.widget.CardView
-            local:MvxBind="Visibility InvertedVisibility(ShowEmptyState)"
+            android:id="@+id/PieChartCard"
             android:elevation="2dp"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
@@ -109,7 +107,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <toggl.giskard.views.PieChartView
-                    local:MvxBind="Segments Segments"
+                    android:id="@+id/PieChartView"
                     tools:background="#1e1e1e"
                     android:layout_marginTop="24dp"
                     android:layout_marginLeft="36dp"
@@ -120,7 +118,7 @@
             </FrameLayout>
         </android.support.v7.widget.CardView>
         <LinearLayout
-            local:MvxBind="Visibility ShowEmptyState"
+            android:id="@+id/EmptyStateView"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_width="match_parent"
