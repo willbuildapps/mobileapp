@@ -34,7 +34,6 @@ namespace Toggl.Giskard.Activities
 
             reportsRecyclerView = FindViewById<ReportsRecyclerView>(Resource.Id.ReportsActivityRecyclerView);
             reportsMainContainer = FindViewById<ReportsLinearLayout>(Resource.Id.ReportsActivityMainContainer);
-            reportsMainContainer.CalendarContainer = FindViewById(Resource.Id.ReportsCalendarContainer);
 
             initializeViews();
 

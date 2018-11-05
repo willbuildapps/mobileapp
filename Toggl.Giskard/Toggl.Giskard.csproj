@@ -394,7 +394,6 @@
     <Compile Include="Views\PieChartView.cs" />
     <Compile Include="Views\ReportsRecyclerViewHolder.cs" />
     <Compile Include="Startup\TogglBindingBuilder.cs" />
-    <Compile Include="Fragments\ReportsCalendarFragment.cs" />
     <Compile Include="Views\ReportsLinearLayout.cs" />
     <Compile Include="Views\ReportsCalendarDayView.cs" />
     <Compile Include="Adapters\ReportsCalendarRecyclerAdapter.cs" />
@@ -759,7 +758,6 @@
     <AndroidResource Include="Resources\layout\SelectWorkspaceFragment.axml" />
     <AndroidResource Include="Resources\layout\SelectWorkspaceFragmentCell.axml" />
     <AndroidResource Include="Resources\layout\ReportsActivityItem.axml" />
-    <AndroidResource Include="Resources\layout\ReportsCalendarFragment.axml" />
     <AndroidResource Include="Resources\layout\ReportsCalendarFragmentDayCell.axml" />
     <AndroidResource Include="Resources\layout\ReportsCalendarFragmentPage.axml" />
     <AndroidResource Include="Resources\layout\ReportsCalendarShortcutCell.axml" />
