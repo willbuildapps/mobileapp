@@ -51,6 +51,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
         private readonly IDialogService dialogService;
         private readonly IIntentDonationService intentDonationService;
         private readonly IStopwatchProvider stopwatchProvider;
+        private readonly ISchedulerProvider schedulerProvider;
 
         private readonly ReportsCalendarViewModel calendarViewModel;
 
@@ -174,7 +175,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
             this.intentDonationService = intentDonationService;
             this.stopwatchProvider = stopwatchProvider;
 
-            calendarViewModel = new ReportsCalendarViewModel(timeService, dialogService, dataSource, intentDonationService);
+            calendarViewModel = new ReportsCalendarViewModel(timeService, dialogService, dataSource, schedulerProvider, intentDonationService);
 
             var totalsObservable = reportSubject
                 .SelectMany(_ => dataSource.ReportsProvider.GetTotals(userId, workspaceId, startDate, endDate))
