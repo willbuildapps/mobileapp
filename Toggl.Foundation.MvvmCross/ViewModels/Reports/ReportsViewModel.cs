@@ -22,6 +22,7 @@ using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
+using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
 using Toggl.Foundation.MvvmCross.ViewModels.Reports;
 using Toggl.Foundation.Reports;
@@ -90,6 +91,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
         public float? BillablePercentage { get; private set; }
 
         public ReportsBarChartViewModel BarChartViewModel { get; }
+
+        public ReportsCalendarViewModel CalendarViewModel => calendarViewModel;
 
         public IReadOnlyList<ChartSegment> Segments
         {
@@ -233,6 +236,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
             var workspace = await interactorFactory.GetDefaultWorkspace().Execute();
             workspaceId = workspace.Id;
             workspaceSubject.OnNext(workspace);
+
+            await calendarViewModel.Initialize();
 
             reportSubject
                 .AsObservable()

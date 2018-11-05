@@ -128,17 +128,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public override void Prepare()
-        {
-            base.Prepare();
-
-            var now = timeService.CurrentDateTime;
-            initialMonth = new CalendarMonth(now.Year, now.Month).AddMonths(-(MonthsToShow - 1));
-        }
-
         public override async Task Initialize()
         {
             await base.Initialize();
+
+            if (isInitialized) return;
+
+            var now = timeService.CurrentDateTime;
+            initialMonth = new CalendarMonth(now.Year, now.Month).AddMonths(-(MonthsToShow - 1));
 
             BeginningOfWeek = (await dataSource.User.Current.FirstAsync()).BeginningOfWeek;
             fillMonthArray();
