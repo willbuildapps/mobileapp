@@ -52,6 +52,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private ReportsCalendarDayViewModel startOfSelection;
         private CompositeDisposable calendarDisposeBag;
         private CompositeDisposable shortcutDisposeBag;
+        private CompositeDisposable oldVariablesDisposeBag;
         private QuickSelectShortcut weeklyQuickSelectShortcut;
         private ReportPeriod reportPeriod = ReportPeriod.ThisWeek;
 
@@ -60,29 +61,30 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         //Properties
         [DependsOn(nameof(CurrentPage))]
         [Obsolete("Use CurrentMonthObservable instead instead")]
-        public CalendarMonth CurrentMonth => CurrentMonthObservable.LastOrDefault();
+        public CalendarMonth CurrentMonth { get; private set; }
         public IObservable<CalendarMonth> CurrentMonthObservable { get; }
 
         [Obsolete("Use CurrentPageObservable instead")]
-        public int CurrentPage => CurrentPageObservable.LastOrDefault();
+        public int CurrentPage { get; private set; }
         public IObservable<int> CurrentPageObservable { get; }
         private readonly ISubject<int> currentPageSubject = new Subject<int>();
 
         [DependsOn(nameof(Months), nameof(CurrentPage))]
         [Obsolete("Use RowsInCurrentMonthObservable instead")]
-        public int RowsInCurrentMonth => RowsInCurrentMonthObservable.LastOrDefault();
+        public int RowsInCurrentMonth { get; private set; }
         public IObservable<int> RowsInCurrentMonthObservable { get; }
 
         [Obsolete("Use MonthsObservable instead")]
-        public IImmutableList<ReportsCalendarPageViewModel> Months => MonthsObservable.LastOrDefault();
+        public IImmutableList<ReportsCalendarPageViewModel> Months { get; private set; }
         public IObservable<IImmutableList<ReportsCalendarPageViewModel>> MonthsObservable { get; }
 
         public IObservable<Unit> ReloadCalendar { get; }
-        public IObservable<IImmutableList<string>> DayHeaders { get; }
+        public IImmutableList<string> DayHeaders { get; private set; }
+        public IObservable<IImmutableList<string>> DayHeadersObservable { get; }
         public IObservable<ReportsDateRangeParameter> SelectedDateRangeObservable { get; }
 
         [Obsolete("Use QuickSelectShortcutsObservable instead")]
-        public IImmutableList<QuickSelectShortcut> QuickSelectShortcuts => QuickSelectShortcutsObservable.LastOrDefault();
+        public IImmutableList<QuickSelectShortcut> QuickSelectShortcuts { get; private set; }
         public IObservable<IImmutableList<QuickSelectShortcut>> QuickSelectShortcutsObservable { get; }
 
         [Obsolete("Use CalendarDayTapped instead")]
@@ -117,6 +119,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             calendarDisposeBag = new CompositeDisposable();
             shortcutDisposeBag = new CompositeDisposable();
+            oldVariablesDisposeBag = new CompositeDisposable();
 
             var beginningOfWeekObservable =
                 dataSource.User.Current
@@ -126,7 +129,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var highlightObservable = highlightedDateRangeSubject.AsObservable();
 
-            DayHeaders = beginningOfWeekObservable
+            DayHeadersObservable = beginningOfWeekObservable
                 .Select(headers)
                 .AsDriver(schedulerProvider);
 
@@ -162,6 +165,30 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     (currentPage, months) => months[currentPage].RowCount)
                 .DistinctUntilChanged()
                 .AsDriver(schedulerProvider);
+
+            CurrentMonthObservable
+                .Subscribe(month => CurrentMonth = month)
+                .DisposedBy(oldVariablesDisposeBag);
+
+            CurrentPageObservable
+                .Subscribe(page => CurrentPage = page)
+                .DisposedBy(oldVariablesDisposeBag);
+
+            RowsInCurrentMonthObservable
+                .Subscribe(rows => RowsInCurrentMonth = rows)
+                .DisposedBy(oldVariablesDisposeBag);
+
+            MonthsObservable
+                .Subscribe(months => Months = months)
+                .DisposedBy(oldVariablesDisposeBag);
+
+            QuickSelectShortcutsObservable
+                .Subscribe(shortcuts => QuickSelectShortcuts = shortcuts)
+                .DisposedBy(oldVariablesDisposeBag);
+
+            DayHeadersObservable
+                .Subscribe(dayHeaders => DayHeaders = dayHeaders)
+                .DisposedBy(oldVariablesDisposeBag);
 
             IImmutableList<string> headers(BeginningOfWeek beginningOfWeek)
                 => Enumerable.Range(0, 7)
@@ -207,14 +234,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                 });
 
+                changeDateRange(weeklyQuickSelectShortcut.DateRange);
+
                 return shortcuts;
             }
-        }
-
-        public override void ViewAppearing()
-        {
-            base.ViewAppearing();
-            changeDateRange(weeklyQuickSelectShortcut.DateRange);
         }
 
         public void QuickSelect(QuickSelectShortcut quickSelectShortCut)
@@ -266,7 +289,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         [Obsolete("Use the DayHeaders observable instead")]
         public string DayHeaderFor(int index)
-            => DayHeaders.LastOrDefault()[index];
+            => DayHeaders[index];
 
         public void SelectPeriod(ReportPeriod period)
         {
