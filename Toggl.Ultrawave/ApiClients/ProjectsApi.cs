@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using Toggl.Multivac;
 using Toggl.Multivac.Models;
 using Toggl.Ultrawave.Models;
@@ -38,8 +39,13 @@ namespace Toggl.Ultrawave.ApiClients
         {
             Ensure.Argument.IsNotNull(projectIds, nameof(projectIds));
 
-            var json = $"{{\"ids\":[{String.Join(",", projectIds)}]}}";
-            return CreateListObservable<Project, IProject>(reportsEndPoints.Search(workspaceId), AuthHeader, json);
+            // var json = $"{{\"ids\":[{String.Join(",", projectIds)}]}}";
+            var json = "{\"ids\"[}";
+            return CreateListObservable<Project, IProject>(reportsEndPoints.Search(workspaceId), AuthHeader, json)
+                .Do(projects =>
+                {
+                    Console.WriteLine($"Found {projects.Count} projects");
+                });
         }
     }
 }
