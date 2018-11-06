@@ -49,7 +49,7 @@ namespace Toggl.Foundation.Models
 
             public TimeEntry Build()
             {
-                ensureValidity();
+                // ensureValidity();
                 return new TimeEntry(this);
             }
 
