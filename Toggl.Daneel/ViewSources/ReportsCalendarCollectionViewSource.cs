@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using Foundation;
 using MvvmCross.Commands;
 using MvvmCross.Platforms.Ios.Binding.Views;
@@ -13,8 +14,8 @@ namespace Toggl.Daneel.ViewSources
     {
         private const string cellIdentifier = nameof(ReportsCalendarViewCell);
 
-        private List<ReportsCalendarPageViewModel> months
-        => (List<ReportsCalendarPageViewModel>)ItemsSource;
+        private ImmutableList<ReportsCalendarPageViewModel> months
+        => (ImmutableList<ReportsCalendarPageViewModel>)ItemsSource;
 
         public IMvxCommand<ReportsCalendarDayViewModel> CellTappedCommand { get; set; }
 
