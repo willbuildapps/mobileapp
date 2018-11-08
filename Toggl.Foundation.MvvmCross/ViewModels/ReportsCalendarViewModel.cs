@@ -59,7 +59,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public BeginningOfWeek BeginningOfWeek { get; private set; }
 
         //Properties
-        [DependsOn(nameof(CurrentPage))]
         [Obsolete("Use CurrentMonthObservable instead instead")]
         public CalendarMonth CurrentMonth { get; private set; }
         public IObservable<CalendarMonth> CurrentMonthObservable { get; }
@@ -69,7 +68,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IObservable<int> CurrentPageObservable { get; }
         private readonly ISubject<int> currentPageSubject = new Subject<int>();
 
-        [DependsOn(nameof(Months), nameof(CurrentPage))]
         [Obsolete("Use RowsInCurrentMonthObservable instead")]
         public int RowsInCurrentMonth { get; private set; }
         public IObservable<int> RowsInCurrentMonthObservable { get; }
@@ -89,7 +87,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
         [Obsolete("Use CalendarDayTapped instead")]
         public IMvxAsyncCommand<ReportsCalendarDayViewModel> CalendarDayTappedCommand { get; }
-        [Obsolete("Use CalendarDayTapped instead")]
+        [Obsolete("Use QuickSelect instead")]
         public IMvxCommand<QuickSelectShortcut> QuickSelectCommand { get; }
 
         public ReportsCalendarViewModel(
