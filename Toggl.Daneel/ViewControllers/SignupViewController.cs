@@ -104,11 +104,11 @@ namespace Toggl.Daneel.ViewControllers
 
             //Commands
             LoginCard.Rx().Tap()
-                .Subscribe(ViewModel.Login)
+                .SubscribeAsync(ViewModel.Login)
                 .DisposedBy(DisposeBag);
 
             SignupButton.Rx().Tap()
-                .Subscribe(ViewModel.Signup)
+                .SubscribeAsync(ViewModel.Signup)
                 .DisposedBy(DisposeBag);
 
             GoogleSignupButton.Rx().Tap()
@@ -120,7 +120,7 @@ namespace Toggl.Daneel.ViewControllers
                 .DisposedBy(DisposeBag);
 
             SelectCountryButton.Rx().Tap()
-                .Subscribe(ViewModel.PickCountry)
+                .SubscribeAsync(ViewModel.PickCountry)
                 .DisposedBy(DisposeBag);
 
             //Color

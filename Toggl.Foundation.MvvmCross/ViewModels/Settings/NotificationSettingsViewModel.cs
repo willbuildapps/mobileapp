@@ -56,7 +56,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Settings
             backgroundService
                 .AppResumedFromBackground
                 .SelectUnit()
-                .Subscribe(refreshPermissionGranted)
+                .SubscribeAsync(refreshPermissionGranted)
                 .DisposedBy(disposeBag);
 
             RequestAccess = UIAction.FromAction(requestAccess);

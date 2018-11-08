@@ -39,7 +39,7 @@ namespace Toggl.Giskard.Activities
             initializeViews();
 
             selectWorkspaceFAB.Rx().Tap()
-                .Subscribe(ViewModel.SelectWorkspace)
+                .SubscribeAsync(ViewModel.SelectWorkspace)
                 .DisposedBy(DisposeBag);
 
             ViewModel.WorkspaceNameObservable

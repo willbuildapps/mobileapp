@@ -93,7 +93,7 @@ namespace Toggl.Daneel.ViewControllers
                 .DisposedBy(DisposeBag);
 
             WorkspaceButton.Rx().Tap()
-                .Subscribe(ViewModel.SelectWorkspace)
+                .SubscribeAsync(ViewModel.SelectWorkspace)
                 .DisposedBy(DisposeBag);
 
             var bindingSet = this.CreateBindingSet<ReportsViewController, ReportsViewModel>();

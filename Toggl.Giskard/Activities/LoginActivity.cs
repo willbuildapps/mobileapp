@@ -67,7 +67,7 @@ namespace Toggl.Giskard.Activities
 
             //Commands
             signupCard.Rx().Tap()
-                .Subscribe(ViewModel.Signup)
+                .SubscribeAsync(ViewModel.Signup)
                 .DisposedBy(DisposeBag);
 
             loginButton.Rx().Tap()
@@ -83,7 +83,7 @@ namespace Toggl.Giskard.Activities
                 .DisposedBy(DisposeBag);
 
             forgotPasswordView.Rx().Tap()
-                .Subscribe(ViewModel.ForgotPassword)
+                .SubscribeAsync(ViewModel.ForgotPassword)
                 .DisposedBy(DisposeBag);
 
             string loginButtonTitle(bool isLoading)

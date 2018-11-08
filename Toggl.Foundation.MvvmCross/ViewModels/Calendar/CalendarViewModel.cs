@@ -174,7 +174,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
                 .Merge(dayChangedObservable)
                 .Merge(selectedCalendarsChangedObservable)
                 .Merge(appResumedFromBackgroundObservable)
-                .Subscribe(reloadData)
+                .SubscribeAsync(reloadData)
                 .DisposedBy(disposeBag);
 
             selectedCalendarsChangedObservable

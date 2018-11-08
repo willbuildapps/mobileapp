@@ -101,7 +101,7 @@ namespace Toggl.Daneel
                 .DisposedBy(DisposeBag);
 
             CtaButton.Rx().Tap()
-                .Subscribe(DataContext.PerformMainAction)
+                .SubscribeAsync(DataContext.PerformMainAction)
                 .DisposedBy(DisposeBag);
 
             DismissButton.Rx().Tap()

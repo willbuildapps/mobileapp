@@ -77,31 +77,31 @@ namespace Toggl.Daneel.ViewControllers
                 .DisposedBy(DisposeBag);
 
             HelpView.Rx().Tap()
-                .Subscribe(ViewModel.OpenHelpView)
+                .SubscribeAsync(ViewModel.OpenHelpView)
                 .DisposedBy(DisposeBag);
 
             LogoutButton.Rx().Tap()
-                .Subscribe(ViewModel.TryLogout)
+                .SubscribeAsync(ViewModel.TryLogout)
                 .DisposedBy(DisposeBag);
 
             AboutView.Rx().Tap()
-                .Subscribe(ViewModel.OpenAboutView)
+                .SubscribeAsync(ViewModel.OpenAboutView)
                 .DisposedBy(DisposeBag);
 
             FeedbackView.Rx().Tap()
-                .Subscribe(ViewModel.SubmitFeedback)
+                .SubscribeAsync(ViewModel.SubmitFeedback)
                 .DisposedBy(DisposeBag);
 
             DateFormatView.Rx().Tap()
-                .Subscribe(ViewModel.SelectDateFormat)
+                .SubscribeAsync(ViewModel.SelectDateFormat)
                 .DisposedBy(DisposeBag);
 
             WorkspaceView.Rx().Tap()
-                .Subscribe(ViewModel.PickDefaultWorkspace)
+                .SubscribeAsync(ViewModel.PickDefaultWorkspace)
                 .DisposedBy(DisposeBag);
 
             DurationFormatView.Rx().Tap()
-                .Subscribe(ViewModel.SelectDurationFormat)
+                .SubscribeAsync(ViewModel.SelectDurationFormat)
                 .DisposedBy(DisposeBag);
 
             ManualModeSwitch.Rx().Changed()
@@ -109,7 +109,7 @@ namespace Toggl.Daneel.ViewControllers
                 .DisposedBy(DisposeBag);
 
             BeginningOfWeekView.Rx().Tap()
-                .Subscribe(ViewModel.SelectBeginningOfWeek)
+                .SubscribeAsync(ViewModel.SelectBeginningOfWeek)
                 .DisposedBy(DisposeBag);
 
             CalendarSettingsView.Rx()
