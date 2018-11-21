@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using Foundation;
 using MvvmCross.Commands;
 using MvvmCross.Platforms.Ios.Binding.Views;
@@ -10,37 +12,41 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class ReportsCalendarCollectionViewSource : MvxCollectionViewSource
+    public sealed class ReportsCalendarCollectionViewSource : UICollectionViewDataSource
     {
         private const string cellIdentifier = nameof(ReportsCalendarViewCell);
 
-        private ImmutableList<ReportsCalendarPageViewModel> months
-        => (ImmutableList<ReportsCalendarPageViewModel>)ItemsSource;
+        private ImmutableList<ReportsCalendarPageViewModel> months;
+        private UICollectionView collectionView;
+        private readonly ISubject<ReportsCalendarDayViewModel> itemTappedSubject = new Subject<ReportsCalendarDayViewModel>();
 
-        public IMvxCommand<ReportsCalendarDayViewModel> CellTappedCommand { get; set; }
+        public IObservable<ReportsCalendarDayViewModel> ItemTapped => itemTappedSubject.AsObservable();
 
         public ReportsCalendarCollectionViewSource(UICollectionView collectionView)
-            : base(collectionView)
         {
+            this.collectionView = collectionView;
+            months = new List<ReportsCalendarPageViewModel>().ToImmutableList();
             collectionView.RegisterNibForCell(ReportsCalendarViewCell.Nib, cellIdentifier);
         }
 
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
         {
-            var item = GetItemAt(indexPath);
-            var cell = GetOrCreateCellFor(collectionView, indexPath, item);
+
+            var item = months[indexPath.Section].Days[(int)indexPath.Item];
+            var cell = collectionView.DequeueReusableCell(cellIdentifier, indexPath) as UICollectionViewCell;
 
             if (cell is ReportsCalendarViewCell calendarCell)
             {
+                calendarCell.BackgroundColor = UIColor.Green;
                 calendarCell.DataContext = item;
-                calendarCell.CellTappedCommand = CellTappedCommand;
+                calendarCell.CellTapped = () =>
+                {
+                    itemTappedSubject.OnNext(item);
+                };
             }
 
             return cell;
         }
-
-        protected override UICollectionViewCell GetOrCreateCellFor(UICollectionView collectionView, NSIndexPath indexPath, object item)
-            => collectionView.DequeueReusableCell(cellIdentifier, indexPath) as UICollectionViewCell;
 
         public override nint NumberOfSections(UICollectionView collectionView)
             => months.Count;
@@ -48,7 +54,10 @@ namespace Toggl.Daneel.ViewSources
         public override nint GetItemsCount(UICollectionView collectionView, nint section)
             => months[(int)section].Days.Count;
 
-        protected override object GetItemAt(NSIndexPath indexPath)
-            => months[indexPath.Section].Days[(int)indexPath.Item];
+        public void CollectionChanged(IImmutableList<ReportsCalendarPageViewModel> months)
+        {
+            this.months = months.ToImmutableList();
+            collectionView.ReloadData();
+        }
     }
 }
