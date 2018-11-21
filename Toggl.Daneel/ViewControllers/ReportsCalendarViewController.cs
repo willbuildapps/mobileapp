@@ -6,7 +6,6 @@ using System.Collections.Immutable;
 using System.Reactive.Disposables;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Platforms.Ios.Views;
-using Toggl.Daneel.Converters;
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Extensions.Reactive;
 using Toggl.Daneel.Presentation.Attributes;
@@ -76,21 +75,19 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.DidMoveToParentViewController(parent);
 
-            var rowCountConverter = new ReportsCalendarRowCountToCalendarHeightConverter(
-                ReportsCalendarCollectionViewLayout.CellHeight,
-                View.Bounds.Height - CalendarCollectionView.Bounds.Height
-            );
             //The constraint isn't available before DidMoveToParentViewController
             var heightConstraint = View
                 .Superview
                 .Constraints
                 .Single(c => c.FirstAttribute == NSLayoutAttribute.Height);
 
-            this.CreateBinding(heightConstraint)
-                .For(v => v.BindAnimatedConstant())
-                .To<ReportsCalendarViewModel>(vm => vm.RowsInCurrentMonth)
-                .WithConversion(rowCountConverter, null)
-                .Apply();
+            var rowHeight = ReportsCalendarCollectionViewLayout.CellHeight;
+            var additionalHeight = View.Bounds.Height - CalendarCollectionView.Bounds.Height;
+
+            ViewModel.RowsInCurrentMonthObservable
+                     .Select(rows => rows * rowHeight + additionalHeight)
+                     .Subscribe(heightConstraint.Rx().ConstantAnimated())
+                     .DisposedBy(DisposeBag);
         }
 
         public override void ViewDidLayoutSubviews()
