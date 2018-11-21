@@ -96,11 +96,9 @@ namespace Toggl.Daneel.ViewControllers
 
             if (calendarInitialized) return;
 
-            //This binding needs the calendar to be in it's final size to work properly
-            this.CreateBinding(CalendarCollectionView)
-                .For(v => v.BindCurrentPage())
-                .To<ReportsCalendarViewModel>(vm => vm.CurrentPage)
-                .Apply();
+            ViewModel.CurrentPageObservable
+                .Subscribe(CalendarCollectionView.Rx().CurrentPageObserver())
+                .DisposedBy(DisposeBag);
 
             calendarInitialized = true;
         }
