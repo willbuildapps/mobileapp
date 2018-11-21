@@ -87,10 +87,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IImmutableList<QuickSelectShortcut> QuickSelectShortcuts { get; private set; }
         public IObservable<IImmutableList<QuickSelectShortcut>> QuickSelectShortcutsObservable { get; }
 
-        [Obsolete("Use CalendarDayTapped instead")]
-        public IMvxAsyncCommand<ReportsCalendarDayViewModel> CalendarDayTappedCommand { get; }
-        [Obsolete("Use QuickSelect instead")]
-        public IMvxCommand<QuickSelectShortcut> QuickSelectCommand { get; }
+        public InputAction<ReportsCalendarDayViewModel> CalendarDayTapped { get; }
+        public InputAction<QuickSelectShortcut> QuickSelect { get; }
 
         public ReportsCalendarViewModel(
             ITimeService timeService,
@@ -111,8 +109,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.schedulerProvider = schedulerProvider;
             this.intentDonationService = intentDonationService;
 
-            CalendarDayTappedCommand = new MvxAsyncCommand<ReportsCalendarDayViewModel>(CalendarDayTapped);
-            QuickSelectCommand = new MvxCommand<QuickSelectShortcut>(QuickSelect);
+            CalendarDayTapped = InputAction<ReportsCalendarDayViewModel>.FromAsync(calendarDayTapped);
+            QuickSelect = InputAction<QuickSelectShortcut>.FromAction(quickSelect);
 
             var currentDate = timeService.CurrentDateTime;
             initialMonth = new CalendarMonth(currentDate.Year, currentDate.Month).AddMonths(-MonthsToShow + 1);
@@ -248,14 +246,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
         }
 
-        public void QuickSelect(QuickSelectShortcut quickSelectShortCut)
+        private void quickSelect(QuickSelectShortcut quickSelectShortCut)
         {
             intentDonationService.DonateShowReport(quickSelectShortCut.Period);
             changeDateRange(quickSelectShortCut.DateRange);
             currentPageSubject.OnNext(MonthsToShow - 1 - quickSelectShortCut.PageOffset);
         }
 
-        public async Task CalendarDayTapped(ReportsCalendarDayViewModel tappedDay)
+        private async Task calendarDayTapped(ReportsCalendarDayViewModel tappedDay)
         {
             if (startOfSelection == null)
             {
