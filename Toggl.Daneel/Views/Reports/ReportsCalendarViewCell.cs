@@ -26,7 +26,7 @@ namespace Toggl.Daneel.Views
             Nib = UINib.FromName(nameof(ReportsCalendarViewCell), NSBundle.MainBundle);
         }
 
-        public IMvxCommand<ReportsCalendarDayViewModel> CellTappedCommand { get; set; }
+        public Action CellTapped { get; set; }
 
         public ReportsCalendarViewCell(IntPtr handle) : base(handle)
         {
@@ -84,8 +84,7 @@ namespace Toggl.Daneel.Views
 
             });
 
-            AddGestureRecognizer(new UITapGestureRecognizer(
-                () => CellTappedCommand?.Execute((ReportsCalendarDayViewModel)DataContext)));
+            AddGestureRecognizer(new UITapGestureRecognizer(CellTapped));
         }
 
         private void prepareViews()
