@@ -42,7 +42,10 @@ namespace Toggl.Daneel.ViewControllers
             var quickSelectCollectionViewSource = new ReportsCalendarQuickSelectCollectionViewSource(QuickSelectCollectionView);
             QuickSelectCollectionView.Source = quickSelectCollectionViewSource;
 
-            setupDayHeaders();
+            ViewModel.DayHeadersObservable
+                     .FirstAsync()
+                     .Subscribe(setupDayHeaders)
+                     .DisposedBy(DisposeBag);
 
             var bindingSet = this.CreateBindingSet<ReportsCalendarViewController, ReportsCalendarViewModel>();
 
@@ -105,15 +108,15 @@ namespace Toggl.Daneel.ViewControllers
             calendarInitialized = true;
         }
 
-        private void setupDayHeaders()
+        private void setupDayHeaders(IImmutableList<string> headers)
         {
-            DayHeader0.Text = ViewModel.DayHeaderFor(0);
-            DayHeader1.Text = ViewModel.DayHeaderFor(1);
-            DayHeader2.Text = ViewModel.DayHeaderFor(2);
-            DayHeader3.Text = ViewModel.DayHeaderFor(3);
-            DayHeader4.Text = ViewModel.DayHeaderFor(4);
-            DayHeader5.Text = ViewModel.DayHeaderFor(5);
-            DayHeader6.Text = ViewModel.DayHeaderFor(6);
+            DayHeader0.Text = headers[0];
+            DayHeader1.Text = headers[1];
+            DayHeader2.Text = headers[2];
+            DayHeader3.Text = headers[3];
+            DayHeader4.Text = headers[4];
+            DayHeader5.Text = headers[5];
+            DayHeader6.Text = headers[6];
         }
     }
 }
