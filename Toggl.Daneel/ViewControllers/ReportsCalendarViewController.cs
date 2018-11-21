@@ -21,12 +21,12 @@ using UIKit;
 namespace Toggl.Daneel.ViewControllers
 {
     [NestedPresentation]
-    public partial class ReportsCalendarViewController : MvxViewController<ReportsCalendarViewModel>, IUICollectionViewDelegate
+    public partial class ReportsCalendarViewController : ReactiveViewController<ReportsCalendarViewModel>
     {
         private bool calendarInitialized;
 
         public ReportsCalendarViewController()
-            : base(nameof(ReportsCalendarViewController), null)
+            : base(nameof(ReportsCalendarViewController))
         {
         }
 
