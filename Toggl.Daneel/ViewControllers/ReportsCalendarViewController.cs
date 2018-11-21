@@ -35,6 +35,16 @@ namespace Toggl.Daneel.ViewControllers
 
             var calendarCollectionViewSource = new ReportsCalendarCollectionViewSource(CalendarCollectionView);
             var calendarCollectionViewLayout = new ReportsCalendarCollectionViewLayout();
+
+             // Calendar collection view
+            ViewModel.MonthsObservable
+                     .Subscribe(calendarCollectionViewSource.CollectionChanged)
+                     .DisposedBy(DisposeBag);
+
+            calendarCollectionViewSource.ItemTapped
+                                        .Subscribe(ViewModel.CalendarDayTapped.Inputs)
+                                        .DisposedBy(DisposeBag);
+
             CalendarCollectionView.DataSource = calendarCollectionViewSource;
             CalendarCollectionView.CollectionViewLayout = calendarCollectionViewLayout;
 
@@ -46,21 +56,11 @@ namespace Toggl.Daneel.ViewControllers
                      .Subscribe(setupDayHeaders)
                      .DisposedBy(DisposeBag);
 
-            var bindingSet = this.CreateBindingSet<ReportsCalendarViewController, ReportsCalendarViewModel>();
-
-            //Calendar collection view
-            bindingSet.Bind(calendarCollectionViewSource).To(vm => vm.Months);
-            bindingSet.Bind(calendarCollectionViewSource)
-                      .For(v => v.CellTappedCommand)
-                      .To(vm => vm.CalendarDayTappedCommand);
-
             //Quick select collection view
-            bindingSet.Bind(quickSelectCollectionViewSource).To(vm => vm.QuickSelectShortcuts);
-            bindingSet.Bind(quickSelectCollectionViewSource)
-                      .For(v => v.SelectionChangedCommand)
-                      .To(vm => vm.QuickSelectCommand);
-
-            bindingSet.Apply();
+            // bindingSet.Bind(quickSelectCollectionViewSource).To(vm => vm.QuickSelectShortcuts);
+            // bindingSet.Bind(quickSelectCollectionViewSource)
+            // .For(v => v.SelectionChangedCommand)
+            // .To(vm => vm.QuickSelectCommand);
 
             ViewModel.CurrentYearObservable
                      .Subscribe(CurrentYearLabel.Rx().Text())
