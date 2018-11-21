@@ -1,14 +1,21 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Collections.Immutable;
+using System.Reactive.Disposables;
 using MvvmCross.Binding.BindingContext;
 using MvvmCross.Platforms.Ios.Views;
 using Toggl.Daneel.Converters;
 using Toggl.Daneel.Extensions;
+using Toggl.Daneel.Extensions.Reactive;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.Views.Reports;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.ViewModels;
+using Toggl.Multivac.Extensions;
 using UIKit;
 
 namespace Toggl.Daneel.ViewControllers
@@ -51,13 +58,15 @@ namespace Toggl.Daneel.ViewControllers
                       .For(v => v.SelectionChangedCommand)
                       .To(vm => vm.QuickSelectCommand);
 
-            //Text
-            bindingSet.Bind(CurrentYearLabel).To(vm => vm.CurrentMonth.Year);
-            bindingSet.Bind(CurrentMonthLabel)
-                      .To(vm => vm.CurrentMonth.Month)
-                      .WithConversion(new IntToMonthNameValueConverter());
-
             bindingSet.Apply();
+
+            ViewModel.CurrentYearObservable
+                     .Subscribe(CurrentYearLabel.Rx().Text())
+                     .DisposedBy(DisposeBag);
+
+            ViewModel.CurrentMonthNameObservable
+                     .Subscribe(CurrentMonthLabel.Rx().Text())
+                     .DisposedBy(DisposeBag);
         }
 
         public override void DidMoveToParentViewController(UIViewController parent)

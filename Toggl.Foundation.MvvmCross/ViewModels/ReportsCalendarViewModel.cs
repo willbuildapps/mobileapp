@@ -62,6 +62,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         [Obsolete("Use CurrentMonthObservable instead instead")]
         public CalendarMonth CurrentMonth { get; private set; }
         public IObservable<CalendarMonth> CurrentMonthObservable { get; }
+        public IObservable<string> CurrentMonthNameObservable { get; }
+        public IObservable<string> CurrentYearObservable { get; }
 
         [Obsolete("Use CurrentPageObservable instead")]
         public int CurrentPage { get; private set; }
@@ -143,6 +145,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             CurrentMonthObservable = CurrentPageObservable
                 .Select(initialMonth.AddMonths)
+                .AsDriver(schedulerProvider);
+
+            CurrentMonthNameObservable = CurrentMonthObservable
+                .Select(month => CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month.Month))
+                .AsDriver(schedulerProvider);
+
+            CurrentYearObservable = CurrentMonthObservable
+                .Select(month => month.Year.ToString())
                 .AsDriver(schedulerProvider);
 
             ReloadCalendar = SelectedDateRangeObservable
