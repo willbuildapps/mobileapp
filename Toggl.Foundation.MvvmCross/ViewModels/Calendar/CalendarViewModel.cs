@@ -51,8 +51,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
 
         public IObservable<TimeFormat> TimeOfDayFormat { get; }
 
-        public IObservable<DateTime> Date { get; }
-
         public UIAction GetStarted { get; }
 
         public UIAction SelectCalendars { get; }
@@ -117,8 +115,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
                 .Preferences
                 .Current
                 .Select(preferences => preferences.TimeOfDayFormat);
-
-            Date = Observable.Return(timeService.CurrentDateTime.Date);
 
             GetStarted = UIAction.FromAsync(getStarted);
 
@@ -301,7 +297,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Calendar
 
         private async Task reloadData()
             => await interactorFactory
-                .GetCalendarItemsForDate(timeService.CurrentDateTime.Date)
+                .GetCalendarItemsForDate(timeService.CurrentDateTime.ToLocalTime().Date)
                 .Execute()
                 .Do(CalendarItems.ReplaceWith);
     }

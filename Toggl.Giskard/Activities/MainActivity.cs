@@ -143,6 +143,7 @@ namespace Toggl.Giskard.Activities
             mainRecyclerAdapter = new MainRecyclerAdapter(ViewModel.TimeEntries, ViewModel.TimeService)
             {
                 SuggestionsViewModel = ViewModel.SuggestionsViewModel,
+                RatingViewModel = ViewModel.RatingViewModel,
                 StopwatchProvider = localStopwatchProvider
             };
 
@@ -200,6 +201,11 @@ namespace Toggl.Giskard.Activities
 
             setupOnboardingSteps();
             onCreateStopwatch.Stop();
+        }
+
+        public void SetupRatingViewVisibility(bool isVisible)
+        {
+            mainRecyclerAdapter.SetupRatingViewVisibility(isVisible);
         }
 
         private void reload()

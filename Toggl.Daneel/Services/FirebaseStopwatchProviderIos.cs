@@ -29,7 +29,7 @@ namespace Toggl.Daneel.Services
             public void Stop()
             {
                 #if USE_ANALYTICS
-                firebaseTrace.Stop();
+                firebaseTrace?.Stop();
                 #endif
             }
         }

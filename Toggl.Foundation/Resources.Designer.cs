@@ -779,39 +779,39 @@ namespace Toggl.Foundation {
             }
         }
         
-        public static string RatingViewPositiveCTATitle {
+        public static string RatingViewPositiveCallToActionTitle {
             get {
-                return ResourceManager.GetString("RatingViewPositiveCTATitle", resourceCulture);
+                return ResourceManager.GetString("RatingViewPositiveCallToActionTitle", resourceCulture);
             }
         }
         
-        public static string RatingViewNegativeCTATitle {
+        public static string RatingViewNegativeCallToActionTitle {
             get {
-                return ResourceManager.GetString("RatingViewNegativeCTATitle", resourceCulture);
+                return ResourceManager.GetString("RatingViewNegativeCallToActionTitle", resourceCulture);
             }
         }
         
-        public static string RatingViewPositiveCTADescription {
+        public static string RatingViewPositiveCallToActionDescription {
             get {
-                return ResourceManager.GetString("RatingViewPositiveCTADescription", resourceCulture);
+                return ResourceManager.GetString("RatingViewPositiveCallToActionDescription", resourceCulture);
             }
         }
         
-        public static string RatingViewNegativeCTADescription {
+        public static string RatingViewNegativeCallToActionDescription {
             get {
-                return ResourceManager.GetString("RatingViewNegativeCTADescription", resourceCulture);
+                return ResourceManager.GetString("RatingViewNegativeCallToActionDescription", resourceCulture);
             }
         }
         
-        public static string RatingViewPositiveCTAButtonTitle {
+        public static string RatingViewPositiveCallToActionButtonTitle {
             get {
-                return ResourceManager.GetString("RatingViewPositiveCTAButtonTitle", resourceCulture);
+                return ResourceManager.GetString("RatingViewPositiveCallToActionButtonTitle", resourceCulture);
             }
         }
         
-        public static string RatingViewNegativeCTAButtonTitle {
+        public static string RatingViewNegativeCallToActionButtonTitle {
             get {
-                return ResourceManager.GetString("RatingViewNegativeCTAButtonTitle", resourceCulture);
+                return ResourceManager.GetString("RatingViewNegativeCallToActionButtonTitle", resourceCulture);
             }
         }
         
@@ -986,6 +986,12 @@ namespace Toggl.Foundation {
         public static string InaccessibleTimeEntryErrorMessage {
             get {
                 return ResourceManager.GetString("InaccessibleTimeEntryErrorMessage", resourceCulture);
+            }
+        }
+        
+        public static string Calendar {
+            get {
+                return ResourceManager.GetString("Calendar", resourceCulture);
             }
         }
     }

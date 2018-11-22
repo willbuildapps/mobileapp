@@ -43,6 +43,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private bool noWorkspaceViewPresented;
         private bool hasStopButtonEverBeenUsed;
         private bool noDefaultWorkspaceViewPresented;
+        private bool shouldHideRatingViewIfStillVisible = false;
         private object isEditViewOpenLock = new object();
 
         private readonly ITogglDataSource dataSource;
@@ -337,6 +338,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             onboardingStorage.SetRatingViewOutcome(RatingViewOutcome.NoInteraction, TimeService.CurrentDateTime);
             TimeService.RunAfterDelay(TimeSpan.FromMinutes(ratingViewTimeout), () =>
             {
+                shouldHideRatingViewIfStillVisible = true;
                 navigationService.ChangePresentation(ToggleRatingViewVisibilityHint.Hide());
             });
         }
@@ -350,16 +352,38 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             base.ViewAppearing();
 
+            hideRatingViewIfStillVisibleAfterDelay();
+
+            handleNoWorkspaceState()
+                .ContinueWith(_ => handleNoDefaultWorkspaceState());
+        }
+
+        private void hideRatingViewIfStillVisibleAfterDelay()
+        {
+            if (shouldHideRatingViewIfStillVisible)
+            {
+                shouldHideRatingViewIfStillVisible = false;
+                navigationService.ChangePresentation(ToggleRatingViewVisibilityHint.Hide());
+            }
+        }
+
+        private async Task handleNoWorkspaceState()
+        {
             if (accessRestrictionStorage.HasNoWorkspace() && !noWorkspaceViewPresented)
             {
-                navigationService.Navigate<NoWorkspaceViewModel>();
                 noWorkspaceViewPresented = true;
+                await navigationService.Navigate<NoWorkspaceViewModel, Unit>();
+                noWorkspaceViewPresented = false;
             }
+        }
 
+        private async Task handleNoDefaultWorkspaceState()
+        {
             if (accessRestrictionStorage.HasNoDefaultWorkspace() && !noDefaultWorkspaceViewPresented)
             {
-                navigationService.Navigate<SelectDefaultWorkspaceViewModel>();
                 noDefaultWorkspaceViewPresented = true;
+                await navigationService.Navigate<SelectDefaultWorkspaceViewModel, Unit>();
+                noDefaultWorkspaceViewPresented = false;
             }
         }
 

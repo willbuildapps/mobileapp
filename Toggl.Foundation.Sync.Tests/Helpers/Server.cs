@@ -1,15 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Toggl.Foundation.Exceptions;
+using Toggl.Foundation.Sync.Tests.Exceptions;
 using Toggl.Foundation.Sync.Tests.Extensions;
 using Toggl.Foundation.Sync.Tests.State;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using Toggl.Multivac.Models;
 using Toggl.Ultrawave;
+using Toggl.Ultrawave.Exceptions;
 using Toggl.Ultrawave.Helpers;
 using Toggl.Ultrawave.Network;
 using Toggl.Ultrawave.Tests.Integration.Helper;
@@ -54,9 +59,18 @@ namespace Toggl.Foundation.Sync.Tests.Helpers
             var tags = (IEnumerable<ITag>)state.Tags;
             var tasks = (IEnumerable<ITask>)state.Tasks;
             var timeEntries = (IEnumerable<ITimeEntry>)state.TimeEntries;
+            var pricingPlans = state.PricingPlans;
 
             // do not push the default workspace twice
-            var workspaces = state.Workspaces.Where(ws => ws.Id != InitialServerState.Workspaces.Single().Id).ToList();
+            var defaultWorkspace = state.DefaultWorkspace;
+            var workspaces = state.Workspaces.Where(ws => ws.Id != InitialServerState.DefaultWorkspace.Id).ToList();
+
+            if (defaultWorkspace != null)
+            {
+                // update the default workspace with the data
+                // there is no need to update IDs - the default WS already has an ID
+                await WorkspaceHelper.Update(user, defaultWorkspace);
+            }
 
             if (workspaces.Any())
             {
@@ -84,17 +98,35 @@ namespace Toggl.Foundation.Sync.Tests.Helpers
                                     timeEntries = timeEntries.Select(timeEntry => timeEntry.WorkspaceId == workspace.Id
                                         ? timeEntry.With(workspaceId: serverWorkspace.Id)
                                         : timeEntry);
+                                    pricingPlans = pricingPlans.ToDictionary(
+                                        keyValuePair => keyValuePair.Key == workspace.Id
+                                            ? serverWorkspace.Id
+                                            : keyValuePair.Key,
+                                        keyValuePair => keyValuePair.Value);
                                 }
                             }))
                     .Merge();
             }
 
+            // the user does not want the default workspace on the server
+            if (defaultWorkspace == null)
+            {
+                try
+                {
+                    await WorkspaceHelper.Delete(user, InitialServerState.DefaultWorkspace.Id);
+                }
+                catch (ApiException exception)
+                {
+                    throw new CannotDeleteDefaultWorkspaceException(exception);
+                }
+            }
+
             // activate pricing plans
-            if (state.PricingPlans.Any())
+            if (pricingPlans.Any())
             {
                 var pricingPlanActivator = new SubscriptionPlanActivator();
 
-                await state.PricingPlans
+                await pricingPlans
                     .Where(keyValuePair => keyValuePair.Value != PricingPlans.Free)
                     .Select(keyValuePair =>
                         pricingPlanActivator.EnsureWorkspaceIsOnPlan(user, keyValuePair.Key, keyValuePair.Value))
@@ -187,7 +219,7 @@ namespace Toggl.Foundation.Sync.Tests.Helpers
 
             await timeEntries.Select(Api.TimeEntries.Create).Merge().ToList();
         }
-    
+
         public static class Factory
         {
             private static readonly UserAgent userAgent = new UserAgent("TogglSyncingTests", "0.0.0");

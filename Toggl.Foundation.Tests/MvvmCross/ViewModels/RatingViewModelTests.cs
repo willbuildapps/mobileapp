@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -112,7 +113,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 public void SetsTheAppropriateCtaTitle()
                 {
                     var observer = TestScheduler.CreateObserver<string>();
-                    ViewModel.CtaTitle.Subscribe(observer);
+                    ViewModel.CallToActionTitle.Subscribe(observer);
                     ViewModel.RegisterImpression(ImpressionIsPositive);
 
                     TestScheduler.Start();
@@ -126,7 +127,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 public void SetsTheAppropriateCtaDescription()
                 {
                     var observer = TestScheduler.CreateObserver<string>();
-                    ViewModel.CtaDescription.Subscribe(observer);
+                    ViewModel.CallToActionDescription.Subscribe(observer);
                     ViewModel.RegisterImpression(ImpressionIsPositive);
 
                     TestScheduler.Start();
@@ -140,7 +141,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 public void SetsTheAppropriateCtaButtonTitle()
                 {
                     var observer = TestScheduler.CreateObserver<string>();
-                    ViewModel.CtaButtonTitle.Subscribe(observer);
+                    ViewModel.CallToActionButtonTitle.Subscribe(observer);
                     ViewModel.RegisterImpression(ImpressionIsPositive);
 
                     TestScheduler.Start();
@@ -170,9 +171,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public sealed class WhenImpressionIsPositive : RegisterImpressionMethodTest
             {
                 protected override bool ImpressionIsPositive => true;
-                protected override string ExpectedCtaTitle => Resources.RatingViewPositiveCTATitle;
-                protected override string ExpectedCtaDescription => Resources.RatingViewPositiveCTADescription;
-                protected override string ExpectedCtaButtonTitle => Resources.RatingViewPositiveCTAButtonTitle;
+                protected override string ExpectedCtaTitle => Resources.RatingViewPositiveCallToActionTitle;
+                protected override string ExpectedCtaDescription => Resources.RatingViewPositiveCallToActionDescription;
+                protected override string ExpectedCtaButtonTitle => Resources.RatingViewPositiveCallToActionButtonTitle;
                 protected override RatingViewOutcome ExpectedStorageOucome => RatingViewOutcome.PositiveImpression;
                 protected override IAnalyticsEvent ExpectedEvent => AnalyticsService.RatingViewFirstStepLike;
             }
@@ -180,9 +181,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public sealed class WhenImpressionIsNegative : RegisterImpressionMethodTest
             {
                 protected override bool ImpressionIsPositive => false;
-                protected override string ExpectedCtaTitle => Resources.RatingViewNegativeCTATitle;
-                protected override string ExpectedCtaDescription => Resources.RatingViewNegativeCTADescription;
-                protected override string ExpectedCtaButtonTitle => Resources.RatingViewNegativeCTAButtonTitle;
+                protected override string ExpectedCtaTitle => Resources.RatingViewNegativeCallToActionTitle;
+                protected override string ExpectedCtaDescription => Resources.RatingViewNegativeCallToActionDescription;
+                protected override string ExpectedCtaButtonTitle => Resources.RatingViewNegativeCallToActionButtonTitle;
                 protected override RatingViewOutcome ExpectedStorageOucome => RatingViewOutcome.NegativeImpression;
                 protected override IAnalyticsEvent ExpectedEvent => AnalyticsService.RatingViewFirstStepDislike;
             }
@@ -201,7 +202,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task HidesTheViewModel()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     NavigationService.Received().ChangePresentation(
                         Arg.Is<ToggleRatingViewVisibilityHint>(hint => hint.ShouldHide == true)
@@ -216,7 +217,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task PerformsTheCorrectAction()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     EnsureCorrectActionWasPerformed();
                 }
@@ -224,7 +225,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task TracksTheAppropriateEventWithTheExpectedParameter()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     AnalyticsService
                         .UserFinishedRatingViewSecondStep
@@ -235,7 +236,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task TracksTheCorrectEvent()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     ExpectedEvent.Received().Track();
                 }
@@ -243,7 +244,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task StoresTheAppropriateRatingViewOutcomeAndTime()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     OnboardingStorage
                         .Received()
@@ -283,7 +284,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 [Fact, LogIfTooSlow]
                 public async Task DoesNothing()
                 {
-                    await ViewModel.PerformMainAction();
+                    await ViewModel.PerformMainAction.Execute();
 
                     RatingService.DidNotReceive().AskForRating();
                 }

@@ -270,6 +270,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
         {
             base.ViewAppeared();
 
+            var firstTimeOpenedFromMainTabBarStopwatch = stopwatchProvider.Get(MeasuredOperation.OpenReportsViewForTheFirstTime);
+            stopwatchProvider.Remove(MeasuredOperation.OpenReportsViewForTheFirstTime);
+            firstTimeOpenedFromMainTabBarStopwatch?.Stop();
+            firstTimeOpenedFromMainTabBarStopwatch = null;
+
             if (!didNavigateToCalendar)
             {
                 navigationService.Navigate(calendarViewModel);
@@ -277,11 +282,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
                 intentDonationService.DonateShowReport();
                 return;
             }
-
-            var firstTimeOpenedFromMainTabBarStopwatch = stopwatchProvider.Get(MeasuredOperation.OpenReportsViewForTheFirstTime);
-            stopwatchProvider.Remove(MeasuredOperation.OpenReportsViewForTheFirstTime);
-            firstTimeOpenedFromMainTabBarStopwatch?.Stop();
-            firstTimeOpenedFromMainTabBarStopwatch = null;
 
             reportSubject.OnNext(Unit.Default);
         }

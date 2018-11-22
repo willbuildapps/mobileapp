@@ -23,11 +23,7 @@ namespace Toggl.Giskard.Activities
             base.OnCreate(bundle);
             SetContentView(Resource.Layout.TokenResetActivity);
             OverridePendingTransition(Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
-        }
-
-        public override void OnCreate(Bundle savedInstanceState, PersistableBundle persistentState)
-        {
-            base.OnCreate(savedInstanceState, persistentState);
+            InitializeViews();
 
             toolbar.Title = LoginTitle;
             SetSupportActionBar(toolbar);

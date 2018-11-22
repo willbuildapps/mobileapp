@@ -16,14 +16,17 @@ using Toggl.Giskard.ViewHelpers;
 
 namespace Toggl.Giskard.Adapters
 {
-    public class MainRecyclerAdapter : ReactiveSectionedRecyclerAdapter<TimeEntryViewModel, TimeEntryViewModel, TimeEntryCollectionViewModel, MainLogCellViewHolder, MainLogSectionViewHolder>
+    public class MainRecyclerAdapter : ReactiveSectionedRecyclerAdapter<TimeEntryViewModel, TimeEntryViewData, TimeEntryCollectionViewModel, MainLogCellViewHolder, MainLogSectionViewHolder>
     {
         public const int SuggestionViewType = 2;
+        public const int UserFeedbackViewType = 3;
 
         private readonly ITimeService timeService;
 
+        private bool isRatingViewVisible = false;
+
         public IObservable<TimeEntryViewModel> TimeEntryTaps
-            => timeEntryTappedSubject.AsObservable();
+            => timeEntryTappedSubject.Select(item => item.TimeEntryViewModel).AsObservable();
 
         public IObservable<TimeEntryViewModel> ContinueTimeEntrySubject
             => continueTimeEntrySubject.AsObservable();
@@ -32,10 +35,11 @@ namespace Toggl.Giskard.Adapters
             => deleteTimeEntrySubject.AsObservable();
 
         public SuggestionsViewModel SuggestionsViewModel { get; set; }
+        public RatingViewModel RatingViewModel { get; set; }
 
         public IStopwatchProvider StopwatchProvider { get; set; }
 
-        private Subject<TimeEntryViewModel> timeEntryTappedSubject = new Subject<TimeEntryViewModel>();
+        private Subject<TimeEntryViewData> timeEntryTappedSubject = new Subject<TimeEntryViewData>();
         private Subject<TimeEntryViewModel> continueTimeEntrySubject = new Subject<TimeEntryViewModel>();
         private Subject<TimeEntryViewModel> deleteTimeEntrySubject = new Subject<TimeEntryViewModel>();
 
@@ -60,11 +64,12 @@ namespace Toggl.Giskard.Adapters
             deleteTimeEntrySubject.OnNext(deletedTimeEntry);
         }
 
-        public override int HeaderOffset => 1;
+        public override int HeaderOffset => isRatingViewVisible ? 2 : 1; 
 
         protected override bool TryBindCustomViewType(RecyclerView.ViewHolder holder, int position)
         {
-            return holder is MainLogSuggestionsListViewHolder;
+            return holder is MainLogSuggestionsListViewHolder
+                || holder is MainLogUserFeedbackViewHolder;
         }
 
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
@@ -77,6 +82,13 @@ namespace Toggl.Giskard.Adapters
                 var mainLogSuggestionsListViewHolder = new MainLogSuggestionsListViewHolder(suggestionsView, SuggestionsViewModel);
                 mainLogSuggestionsStopwatch.Stop();
                 return mainLogSuggestionsListViewHolder;
+            }
+
+            if (viewType == UserFeedbackViewType)
+            {
+                var suggestionsView = LayoutInflater.FromContext(parent.Context).Inflate(Resource.Layout.MainUserFeedbackCard, parent, false);
+                var userFeedbackViewHolder = new MainLogUserFeedbackViewHolder(suggestionsView, RatingViewModel);
+                return userFeedbackViewHolder;
             }
 
             return base.OnCreateViewHolder(parent, viewType);
@@ -111,9 +123,10 @@ namespace Toggl.Giskard.Adapters
         public override int GetItemViewType(int position)
         {
             if (position == 0)
-            {
                 return SuggestionViewType;
-            }
+
+            if (isRatingViewVisible && position == 1)
+                return UserFeedbackViewType;
 
             return base.GetItemViewType(position);
         }
@@ -127,6 +140,15 @@ namespace Toggl.Giskard.Adapters
             mainLogSectionViewHolder.Now = timeService.CurrentDateTime;
             mainLogSectionStopwatch.Stop();
             return mainLogSectionViewHolder;
+        }
+
+        public void SetupRatingViewVisibility(bool isVisible)
+        {
+            if (isRatingViewVisible == isVisible)
+                return;
+
+            isRatingViewVisible = isVisible;
+            NotifyDataSetChanged();
         }
 
         protected override MainLogCellViewHolder CreateItemViewHolder(ViewGroup parent)
@@ -148,8 +170,8 @@ namespace Toggl.Giskard.Adapters
         protected override long IdForSection(IReadOnlyList<TimeEntryViewModel> section)
             => section.First().StartTime.Date.GetHashCode();
 
-        protected override TimeEntryViewModel Wrap(TimeEntryViewModel item)
-            => item;
+        protected override TimeEntryViewData Wrap(TimeEntryViewModel item)
+            => new TimeEntryViewData(item);
 
         protected override TimeEntryCollectionViewModel Wrap(IReadOnlyList<TimeEntryViewModel> section)
             => new TimeEntryCollectionViewModel(section);

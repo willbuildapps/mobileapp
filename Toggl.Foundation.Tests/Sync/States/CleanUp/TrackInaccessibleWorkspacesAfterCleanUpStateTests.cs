@@ -42,7 +42,7 @@ namespace Toggl.Foundation.Tests.Sync.States.CleanUp
             private readonly ITogglDataSource dataSource = Substitute.For<ITogglDataSource>();
 
             private IAnalyticsService analyticsService { get; } = Substitute.For<IAnalyticsService>();
-            
+
             private readonly MockWorkspace inaccessibleWorkspace = new MockWorkspace { Id = 1, IsInaccessible = true };
             private readonly MockWorkspace accessibleWorkspace = new MockWorkspace { Id = 2, IsInaccessible = false };
 
@@ -67,6 +67,30 @@ namespace Toggl.Foundation.Tests.Sync.States.CleanUp
                 var transition = await state.Start();
 
                 analyticsService.WorkspacesInaccesibleAfterCleanUp.Received().Track(1);
+            }
+
+            [Fact]
+            public async Task ReturnsOnlyOnceEvenWhenMultipleWorkspacesAreInaccessible()
+            {
+                var workspaces = new[]
+                {
+                    new MockWorkspace { Id = 1, IsInaccessible = false },
+                    new MockWorkspace { Id = 2, IsInaccessible = true },
+                    new MockWorkspace { Id = 3, IsInaccessible = true },
+                    new MockWorkspace { Id = 4, IsInaccessible = true },
+                };
+
+                dataSource.Workspaces.GetAll(Arg.Any<Func<IDatabaseWorkspace, bool>>(), Arg.Is(true))
+                    .Returns(callInfo =>
+                    {
+                        var predicate = callInfo[0] as Func<IDatabaseWorkspace, bool>;
+                        var filteredWorkspace = workspaces.Where(predicate);
+                        return Observable.Return(filteredWorkspace.Cast<IThreadSafeWorkspace>());
+                    });
+
+                var state = new TrackInaccessibleWorkspacesAfterCleanUpState(dataSource, analyticsService);
+                var transition = await state.Start().SingleAsync();
+                transition.Result.Should().Be(state.Continue);
             }
         }
     }

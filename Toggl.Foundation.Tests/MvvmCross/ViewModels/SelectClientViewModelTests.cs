@@ -24,7 +24,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 = SelectClientParameters.WithIds(10, null);
 
             protected override SelectClientViewModel CreateViewModel()
-               => new SelectClientViewModel(InteractorFactory, NavigationService);
+               => new SelectClientViewModel(InteractorFactory, NavigationService, SchedulerProvider);
 
             protected List<IThreadSafeClient> GenerateClientList() =>
                 Enumerable.Range(1, 10).Select(i =>
@@ -40,13 +40,17 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
         {
             [Theory, LogIfTooSlow]
             [ConstructorData]
-            public void ThrowsIfAnyOfTheArgumentsIsNull(bool useInteractorFactory, bool useNavigationService)
+            public void ThrowsIfAnyOfTheArgumentsIsNull(
+                bool useInteractorFactory,
+                bool useNavigationService,
+                bool useSchedulerProvider)
             {
                 var interactorFactory = useInteractorFactory ? InteractorFactory : null;
                 var navigationService = useNavigationService ? NavigationService : null;
+                var schedulerProvider = useSchedulerProvider ? SchedulerProvider : null;
 
                 Action tryingToConstructWithEmptyParameters =
-                    () => new SelectClientViewModel(interactorFactory, navigationService);
+                    () => new SelectClientViewModel(interactorFactory, navigationService, schedulerProvider);
 
                 tryingToConstructWithEmptyParameters
                     .Should().Throw<ArgumentNullException>();
@@ -66,7 +70,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.Initialize();
 
-                ViewModel.Suggestions.Should().HaveCount(11);
+                ViewModel.Clients.Count().Should().Equals(clients.Count);
             }
 
             [Fact, LogIfTooSlow]
@@ -80,7 +84,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.Initialize();
 
-                ViewModel.Suggestions.First().Name.Should().Be(Resources.NoClient);
+                ViewModel.Clients.First().First().Name.Should().Be(Resources.NoClient);
+                ViewModel.Clients.First().First().Should().BeOfType<SelectableClientViewModel>();
             }
 
             [Fact, LogIfTooSlow]
@@ -94,7 +99,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.Initialize();
 
-                ViewModel.Suggestions.Single(c => c.Selected).Name.Should().Be(Resources.NoClient);
+                ViewModel.Clients.First().Single(c => c.Selected).Name.Should().Be(Resources.NoClient);
             }
 
             [Theory, LogIfTooSlow]
@@ -118,18 +123,18 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 await ViewModel.Initialize();
 
-                ViewModel.Suggestions.Single(c => c.Selected).Name.Should().Be(id.ToString());
+                ViewModel.Clients.First().Single(c => c.Selected).Name.Should().Be(id.ToString());
             }
         }
 
-        public sealed class TheCloseCommand : SelectClientViewModelTest
+        public sealed class TheCloseAction : SelectClientViewModelTest
         {
             [Fact, LogIfTooSlow]
             public async Task ClosesTheViewModel()
             {
                 await ViewModel.Initialize();
 
-                await ViewModel.CloseCommand.ExecuteAsync();
+                await ViewModel.Close.Execute();
 
                 await NavigationService.Received()
                     .Close(Arg.Is(ViewModel), Arg.Any<long?>());
@@ -140,25 +145,23 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.Initialize();
 
-                ViewModel.CloseCommand.ExecuteAsync().Wait();
+                await ViewModel.Close.Execute();
 
                 await NavigationService.Received()
                     .Close(Arg.Is(ViewModel), null);
             }
         }
 
-        public sealed class TheSelectClientCommand : SelectClientViewModelTest
+        public sealed class TheSelectClientAction : SelectClientViewModelTest
         {
-            private const string clientName = "9";
-            private readonly IDatabaseClient Client = Substitute.For<IDatabaseClient>();
+            private readonly SelectableClientViewModel client = new SelectableClientViewModel(9, "Client A", false);
 
-            public TheSelectClientCommand()
+            public TheSelectClientAction()
             {
                 var clients = GenerateClientList();
                 InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
                     .Execute()
                     .Returns(Observable.Return(clients));
-                ViewModel.Prepare(Parameters);
             }
 
             [Fact, LogIfTooSlow]
@@ -166,7 +169,7 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             {
                 await ViewModel.Initialize();
 
-                ViewModel.SelectClientCommand.Execute(clientName);
+                ViewModel.SelectClient.Execute(client);
 
                 await NavigationService.Received()
                     .Close(Arg.Is(ViewModel), Arg.Any<long?>());
@@ -175,119 +178,29 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [Fact, LogIfTooSlow]
             public async Task ReturnsTheSelectedClientId()
             {
-                const long expectedId = 9;
                 await ViewModel.Initialize();
 
-                ViewModel.SelectClientCommand.Execute(clientName);
+                ViewModel.SelectClient.Execute(client);
 
                 await NavigationService.Received().Close(
                     Arg.Is(ViewModel),
-                    Arg.Is<long?>(expectedId)
+                    Arg.Is<long?>(client.Id)
                 );
             }
 
-            [Fact, LogIfTooSlow]
-            public async Task ReturnsZeroWhenNoClientIsSelected()
-            {
-                await ViewModel.Initialize();
-
-                ViewModel.SelectClientCommand.Execute(Resources.NoClient);
-
-                await NavigationService.Received().Close(
-                    Arg.Is(ViewModel),
-                    Arg.Is<long?>(0)
-                );
-            }
-        }
-
-        public sealed class TheTextProperty : SelectClientViewModelTest
-        {
-            [Fact, LogIfTooSlow]
-            public async Task FiltersTheSuggestionsWhenItChanges()
-            {
-                var clients = GenerateClientList();
-                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
-                    .Execute()
-                    .Returns(Observable.Return(clients));
-                ViewModel.Prepare(Parameters);
-                await ViewModel.Initialize();
-
-                ViewModel.Text = "0";
-
-                ViewModel.Suggestions.Should().HaveCount(1);
-            }
-        }
-
-        public sealed class TheSuggestCreationProperty : SelectClientViewModelTest
-        {
-            private const string name = "My client";
-
-            public TheSuggestCreationProperty()
-            {
-                var client = Substitute.For<IThreadSafeClient>();
-                client.Name.Returns(name);
-                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
-                    .Execute()
-                    .Returns(Observable.Return(new List<IThreadSafeClient> { client }));
-                ViewModel.Prepare(Parameters);
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ReturnsFalseIfTheTextIsEmpty()
-            {
-                await ViewModel.Initialize();
-
-                ViewModel.Text = "";
-
-                ViewModel.SuggestCreation.Should().BeFalse();
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ReturnsFalseIfTheTextIsOnlyWhitespace()
-            {
-                await ViewModel.Initialize();
-
-                ViewModel.Text = "       ";
-
-                ViewModel.SuggestCreation.Should().BeFalse();
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ReturnsFalseIfTheTextMatchesTheNameOfAnExistingProject()
-            {
-                await ViewModel.Initialize();
-
-                ViewModel.Text = name;
-
-                ViewModel.SuggestCreation.Should().BeFalse();
-            }
-
-            [Fact, LogIfTooSlow]
-            public async Task ReturnsFalseIfTheTextIsLongerThanTwoHundredAndFiftyCharacters()
-            {
-                await ViewModel.Initialize();
-
-                ViewModel.Text = "Some absurdly long project name created solely for making sure that the SuggestCreation property returns false when the project name is longer than the previously specified threshold so that the mobile apps behave and avoid crashes in backend and even bigger problems.";
-
-                ViewModel.SuggestCreation.Should().BeFalse();
-            }
-        }
-
-        public sealed class TheCreateClientCommand : SelectClientViewModelTest
-        {
             [Fact, LogIfTooSlow]
             public async Task CreatesANewClientWithTheGivenNameInTheCurrentWorkspace()
             {
                 long workspaceId = 10;
                 await ViewModel.Initialize();
+                var newClient = new SelectableClientCreationViewModel("Some name of the client");
                 ViewModel.Prepare(Parameters);
-                ViewModel.Text = "Some name of the client";
 
-                await ViewModel.CreateClientCommand.ExecuteAsync();
+                await ViewModel.SelectClient.Execute(newClient);
 
                 await InteractorFactory
                     .Received()
-                    .CreateClient(Arg.Is(ViewModel.Text), Arg.Is(workspaceId))
+                    .CreateClient(Arg.Is(newClient.Name), Arg.Is(workspaceId))
                     .Execute();
             }
 
@@ -300,9 +213,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             public async Task TrimsNameFromTheStartAndTheEndBeforeSaving(string name, string trimmed)
             {
                 await ViewModel.Initialize();
-                ViewModel.Text = name;
 
-                await ViewModel.CreateClientCommand.ExecuteAsync();
+                await ViewModel.SelectClient.Execute(new SelectableClientCreationViewModel(name));
 
                 await InteractorFactory
                     .Received()
@@ -310,19 +222,38 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                     .Execute();
             }
 
-            [Theory, LogIfTooSlow]
-            [InlineData(" ")]
-            [InlineData("\t")]
-            [InlineData("\n")]
-            [InlineData("               ")]
-            [InlineData("      \t  \n     ")]
-            public async Task DoesNotSuggestCreatingClientsWhenTheDescriptionConsistsOfOnlyWhiteCharacters(string name)
+        }
+
+        public sealed class TheClientsProperty : SelectClientViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async Task UpdateWhenFilterTextChanges()
             {
+                var clients = GenerateClientList();
+                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
+                    .Execute()
+                    .Returns(Observable.Return(clients));
                 await ViewModel.Initialize();
 
-                ViewModel.Text = name;
+                await ViewModel.SetFilterText.Execute("0");
 
-                ViewModel.SuggestCreation.Should().BeFalse();
+                ViewModel.Clients.Count().Should().Equals(1);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task AddCreationCellWhenNoMatchingSuggestion()
+            {
+                var clients = GenerateClientList();
+                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
+                    .Execute()
+                    .Returns(Observable.Return(clients));
+                await ViewModel.Initialize();
+
+                var nonExistingClientName = "Some none existing name";
+                await ViewModel.SetFilterText.Execute(nonExistingClientName);
+
+                ViewModel.Clients.First().First().Name.Should().Equals(nonExistingClientName);
+                ViewModel.Clients.First().First().Should().BeOfType<SelectableClientCreationViewModel>();
             }
 
             [Theory, LogIfTooSlow]
@@ -331,14 +262,34 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             [InlineData("\n")]
             [InlineData("               ")]
             [InlineData("      \t  \n     ")]
-            public async Task DoesNotAllowCreatingClientsWhenTheDescriptionConsistsOfOnlyWhiteCharacters(string name)
+            [InlineData(null)]
+            public async Task DoesNotSuggestCreatingClientsWhenTheDescriptionConsistsOfOnlyWhiteCharacters(string name)
             {
+                var clients = GenerateClientList();
+                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
+                    .Execute()
+                    .Returns(Observable.Return(clients));
+                ViewModel.Prepare(Parameters);
+
                 await ViewModel.Initialize();
-                ViewModel.Text = name;
+                await ViewModel.SetFilterText.Execute(name);
 
-                await ViewModel.CreateClientCommand.ExecuteAsync();
+                var receivedClients = await ViewModel.Clients.FirstAsync();
+                receivedClients.First().Should().NotBeOfType<SelectableClientCreationViewModel>();
+            }
 
-                await InteractorFactory.DidNotReceiveWithAnyArgs().CreateClient(null, 0).Execute();
+            [Fact, LogIfTooSlow]
+            public async Task DoesNotSuggestCreationWhenTextMatchesAExistingClientName()
+            {
+                var clients = GenerateClientList();
+                InteractorFactory.GetAllClientsInWorkspace(Arg.Any<long>())
+                    .Execute()
+                    .Returns(Observable.Return(clients));
+                await ViewModel.Initialize();
+
+                await ViewModel.SetFilterText.Execute(clients.First().Name);
+
+                ViewModel.Clients.First().First().Should().NotBeOfType<SelectableClientCreationViewModel>();
             }
         }
     }

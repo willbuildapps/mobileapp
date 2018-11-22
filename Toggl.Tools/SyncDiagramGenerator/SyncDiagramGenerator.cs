@@ -11,6 +11,7 @@ using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Sync;
 using Toggl.Foundation.Sync.States;
+using Toggl.Foundation.Sync.States.Push;
 using Toggl.PrimeRadiant;
 using Toggl.Ultrawave;
 
@@ -18,6 +19,11 @@ namespace SyncDiagramGenerator
 {
     internal sealed class SyncDiagramGenerator
     {
+        private readonly static string[] commonInterfacePrefixes =
+        {
+            "IDatabase", "IThreadSafe"
+        };
+
         public (List<Node> Nodes, List<Edge> Edges) GenerateGraph()
         {
             Console.WriteLine("Configuring state machine");
@@ -40,14 +46,14 @@ namespace SyncDiagramGenerator
             Console.WriteLine("Created graph nodes and edges");
 
             var entryPointCount = addEntryPoints(edges, nodes, entryPoints, configurator, stateNodes);
-            var deadEndsCount = addDeadEnds(edges, nodes, allStateResults, configurator, stateNodes);
+            var looseEndCount = addLooseEnds(edges, nodes, allStateResults, configurator, stateNodes);
 
-            Console.WriteLine($"Found and added {entryPointCount} entry points and {deadEndsCount} dead ends");
+            Console.WriteLine($"Found and added {entryPointCount} entry points and {looseEndCount} loose ends");
 
             return (nodes, edges);
         }
 
-        private int addDeadEnds(List<Edge> edges, List<Node> nodes,
+        private int addLooseEnds(List<Edge> edges, List<Node> nodes,
             List<(object State, List<(IStateResult Result, string Name)> StateResults)> allStateResults,
             Configurator configurator,
             Dictionary<object, Node> stateNodes)
@@ -60,8 +66,8 @@ namespace SyncDiagramGenerator
             {
                 var node = new Node
                 {
-                    Label = "Dead End",
-                    Type = Node.NodeType.DeadEnd
+                    Label = "Loose End",
+                    Type = Node.NodeType.LooseEnd
                 };
                 nodes.Add(node);
 
@@ -144,16 +150,35 @@ namespace SyncDiagramGenerator
                 s => new Node
                 {
                     Label = fullGenericTypeName(s.GetType()),
-                    Type = s is InvalidTransitionState ? Node.NodeType.InvalidTransitionState : Node.NodeType.Regular
+                    Type = nodeType(s)
                 });
+        }
+
+        private Node.NodeType nodeType(object state)
+        {
+            switch (state)
+            {
+                case InvalidTransitionState _:
+                    return Node.NodeType.InvalidTransitionState;
+                case CheckServerStatusState _:
+                    return Node.NodeType.RetryLoop;
+                case ResetAPIDelayState _:
+                    return Node.NodeType.APIDelayReset;
+                case DeadEndState _:
+                    return Node.NodeType.DeadEnd;
+                default:
+                    return Node.NodeType.Regular;
+            }
         }
 
         private string fullGenericTypeName(Type type)
         {
             if (!type.IsGenericType)
-                return type.Name;
+                return cleanCommonInterfaces(type.Name);
 
-            var genericArgumentNames = type.GetGenericArguments().Select(fullGenericTypeName);
+            var genericArgumentNames = type.GetGenericArguments()
+                .Select(fullGenericTypeName)
+                .Distinct();
 
             if (typeof(ITuple).IsAssignableFrom(type))
             {
@@ -166,6 +191,17 @@ namespace SyncDiagramGenerator
                 cleanedName = cleanedName.Substring(0, backTickIndex);
 
             return $"{cleanedName}<{string.Join(", ", genericArgumentNames)}>";
+        }
+
+        private string cleanCommonInterfaces(string typeName)
+        {
+            foreach (var prefix in commonInterfacePrefixes)
+            {
+                if (typeName.StartsWith(prefix))
+                    return $"I{typeName.Substring(prefix.Length)}";
+            }
+
+            return typeName;
         }
 
         private static List<(object State, List<(IStateResult Result, string Name)> StateResults)>
@@ -197,7 +233,8 @@ namespace SyncDiagramGenerator
                 Substitute.For<ITimeService>(),
                 Substitute.For<IAnalyticsService>(),
                 entryPoints,
-                Substitute.For<IObservable<Unit>>()
+                Substitute.For<IObservable<Unit>>(),
+                Substitute.For<ISyncStateQueue>()
             );
         }
     }

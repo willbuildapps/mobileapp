@@ -60,7 +60,6 @@ namespace Toggl.Foundation.MvvmCross
 
             if (accessRestrictionStorage.IsApiOutdated() || accessRestrictionStorage.IsClientOutdated())
             {
-                await navigationService.Navigate<OnboardingViewModel>();
                 await navigationService.Navigate<OutdatedAppViewModel>();
                 return;
             }

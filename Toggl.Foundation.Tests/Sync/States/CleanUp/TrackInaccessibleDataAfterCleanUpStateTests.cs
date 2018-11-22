@@ -42,7 +42,7 @@ namespace Toggl.Foundation.Tests.Sync.States.CleanUp
             private readonly ITogglDataSource dataSource = Substitute.For<ITogglDataSource>();
 
             private IAnalyticsService analyticsService { get; } = Substitute.For<IAnalyticsService>();
-            
+
             private readonly MockWorkspace inaccessibleWorkspace = new MockWorkspace { Id = 1, IsInaccessible = true };
             private readonly MockWorkspace accessibleWorkspace = new MockWorkspace { Id = 2, IsInaccessible = false };
 
@@ -149,7 +149,48 @@ namespace Toggl.Foundation.Tests.Sync.States.CleanUp
                 analyticsService.ProjectsInaccesibleAfterCleanUp.Received().Track(0);
                 analyticsService.ClientsInaccesibleAfterCleanUp.Received().Track(3);
             }
+
+            [Fact]
+            public async Task ReturnsOnlyOnceEvenWhenMultipleWorkspacesAreInaccessible()
+            {
+                // workspaces
+                var workspaces = new[]
+                {
+                    new MockWorkspace { Id = 1, IsInaccessible = false },
+                    new MockWorkspace { Id = 2, IsInaccessible = true },
+                    new MockWorkspace { Id = 3, IsInaccessible = true },
+                    new MockWorkspace { Id = 4, IsInaccessible = true },
+                };
+
+                dataSource.Workspaces.GetAll(Arg.Any<Func<IDatabaseWorkspace, bool>>(), Arg.Is(true))
+                    .Returns(callInfo =>
+                    {
+                        var predicate = callInfo[0] as Func<IDatabaseWorkspace, bool>;
+                        var filteredWorkspace = workspaces.Where(predicate);
+                        return Observable.Return(filteredWorkspace.Cast<IThreadSafeWorkspace>());
+                    });
+
+                //timeEntries
+                var timeEntries = new[]
+                {
+                    new MockTimeEntry { Id = 11, Workspace = workspaces[0], WorkspaceId = workspaces[0].Id },
+                    new MockTimeEntry { Id = 22, Workspace = workspaces[1], WorkspaceId = workspaces[1].Id },
+                    new MockTimeEntry { Id = 33, Workspace = workspaces[2], WorkspaceId = workspaces[2].Id },
+                    new MockTimeEntry { Id = 44, Workspace = workspaces[3], WorkspaceId = workspaces[3].Id },
+                };
+
+                dataSource.TimeEntries.GetAll(Arg.Any<Func<IDatabaseTimeEntry, bool>>(), Arg.Is(true))
+                    .Returns(callInfo =>
+                    {
+                        var predicate = callInfo[0] as Func<IDatabaseTimeEntry, bool>;
+                        var filteredTimeEntries = timeEntries.Where(predicate);
+                        return Observable.Return(filteredTimeEntries.Cast<IThreadSafeTimeEntry>());
+                    });
+
+                var state = new TrackInaccessibleDataAfterCleanUpState(dataSource, analyticsService);
+                var transition = await state.Start().SingleAsync();
+                transition.Result.Should().Be(state.Continue);
+            }
         }
     }
 }
-
