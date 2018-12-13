@@ -36,6 +36,10 @@ namespace Toggl.Daneel.ViewControllers
             var calendarCollectionViewSource = new ReportsCalendarCollectionViewSource(CalendarCollectionView);
             var calendarCollectionViewLayout = new ReportsCalendarCollectionViewLayout();
 
+            CalendarCollectionView.Delegate = calendarCollectionViewSource;
+            CalendarCollectionView.DataSource = calendarCollectionViewSource;
+            CalendarCollectionView.CollectionViewLayout = calendarCollectionViewLayout;
+
              // Calendar collection view
             ViewModel.MonthsObservable
                      .Subscribe(calendarCollectionViewSource.CollectionChanged)
@@ -45,8 +49,6 @@ namespace Toggl.Daneel.ViewControllers
                                         .Subscribe(ViewModel.CalendarDayTapped.Inputs)
                                         .DisposedBy(DisposeBag);
 
-            CalendarCollectionView.DataSource = calendarCollectionViewSource;
-            CalendarCollectionView.CollectionViewLayout = calendarCollectionViewLayout;
 
             var quickSelectCollectionViewSource = new ReportsCalendarQuickSelectCollectionViewSource(QuickSelectCollectionView);
             QuickSelectCollectionView.Source = quickSelectCollectionViewSource;

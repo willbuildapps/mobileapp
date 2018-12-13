@@ -14,7 +14,7 @@ using UIKit;
 
 namespace Toggl.Daneel.Views
 {
-    public sealed partial class ReportsCalendarViewCell : MvxCollectionViewCell
+    public sealed partial class ReportsCalendarViewCell : ReactiveCollectionViewCell<ReportsCalendarDayViewModel>
     {
         private const int cornerRadius = 16;
 
@@ -26,8 +26,6 @@ namespace Toggl.Daneel.Views
             Nib = UINib.FromName(nameof(ReportsCalendarViewCell), NSBundle.MainBundle);
         }
 
-        public Action CellTapped { get; set; }
-
         public ReportsCalendarViewCell(IntPtr handle) : base(handle)
         {
             // Note: this .ctor should not contain any initialization logic.
@@ -36,55 +34,7 @@ namespace Toggl.Daneel.Views
         public override void AwakeFromNib()
         {
             base.AwakeFromNib();
-
             prepareViews();
-
-            this.DelayBind(() =>
-            {
-                var backgroundColorConverter
-                    = new BoolToConstantValueConverter<UIColor>(
-                        Color.ReportsCalendar.SelectedDayBackgoundColor.ToNativeColor(),
-                        Color.Common.Transparent.ToNativeColor());
-
-                var todayVisibilityConverter = new MvxVisibilityValueConverter();
-
-                var bindingSet = this.CreateBindingSet<ReportsCalendarViewCell, ReportsCalendarDayViewModel>();
-
-                //Text
-                bindingSet.Bind(Text).To(vm => vm.Day);
-
-                //Color
-                bindingSet.Bind(Text)
-                          .For(v => v.TextColor)
-                          .ByCombining(new ReportsCalendarCellTextColorValueCombiner(),
-                                       v => v.IsInCurrentMonth,
-                                       v => v.Selected);
-
-                bindingSet.Bind(BackgroundView)
-                          .For(v => v.BackgroundColor)
-                          .To(vm => vm.Selected)
-                          .WithConversion(backgroundColorConverter);
-
-                //Rounding
-                bindingSet.Bind(BackgroundView)
-                          .For(v => v.RoundLeft)
-                          .To(vm => vm.IsStartOfSelectedPeriod);
-
-                bindingSet.Bind(BackgroundView)
-                          .For(v => v.RoundRight)
-                          .To(vm => vm.IsEndOfSelectedPeriod);
-
-                //Today
-                bindingSet.Bind(TodayBackgroundView)
-                    .For(v => v.BindVisibility())
-                    .To(vm => vm.IsToday)
-                    .WithConversion(todayVisibilityConverter);
-
-                bindingSet.Apply();
-
-            });
-
-            AddGestureRecognizer(new UITapGestureRecognizer(CellTapped));
         }
 
         private void prepareViews()
@@ -99,5 +49,29 @@ namespace Toggl.Daneel.Views
             TodayBackgroundView.BackgroundColor = Color.ReportsCalendar.Today.ToNativeColor();
         }
 
+        private readonly UIColor otherMonthColor = Color.ReportsCalendar.CellTextColorOutOfCurrentMonth.ToNativeColor();
+        private readonly UIColor thisMonthColor = Color.ReportsCalendar.CellTextColorInCurrentMonth.ToNativeColor();
+        private readonly UIColor selectedColor = Color.ReportsCalendar.CellTextColorSelected.ToNativeColor();
+
+        protected override void UpdateView()
+        {
+            Text.Text = Item.Day.ToString();
+            if (Item.Selected)
+            {
+                Text.TextColor = selectedColor;
+            }
+            else
+            {
+                Text.TextColor = Item.IsInCurrentMonth ? thisMonthColor : otherMonthColor;
+            }
+
+            BackgroundView.BackgroundColor = Item.Selected
+                ? Color.ReportsCalendar.SelectedDayBackgoundColor.ToNativeColor()
+                : Color.Common.Transparent.ToNativeColor();
+
+            BackgroundView.RoundLeft = Item.IsStartOfSelectedPeriod;
+            BackgroundView.RoundRight = Item.IsEndOfSelectedPeriod;
+            TodayBackgroundView.Hidden = !Item.IsToday;
+        }
     }
 }
