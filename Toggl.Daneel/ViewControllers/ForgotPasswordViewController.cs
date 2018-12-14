@@ -1,7 +1,5 @@
 using System;
 using System.Reactive.Linq;
-using MvvmCross.Binding;
-using MvvmCross.Binding.BindingContext;
 using MvvmCross.Platforms.Ios.Presenters.Attributes;
 using MvvmCross.Plugin.Color.Platforms.Ios;
 using Toggl.Daneel.Extensions;
@@ -14,7 +12,6 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using UIKit;
-using static Toggl.Daneel.Extensions.ViewBindingExtensions;
 
 namespace Toggl.Daneel.ViewControllers
 {
@@ -40,62 +37,8 @@ namespace Toggl.Daneel.ViewControllers
             Title = Resources.LoginForgotPassword;
 
             prepareViews();
-
-            //Text
-            ViewModel.ErrorMessage
-                .Subscribe(errorMessage =>
-                {
-                    ErrorLabel.Text = errorMessage;
-                    ErrorLabel.Hidden = string.IsNullOrEmpty(errorMessage);
-                })
-                .DisposedBy(DisposeBag);
-
-            EmailTextField.Rx().Text()
-                .Select(Email.From)
-                .Subscribe(ViewModel.Email.OnNext)
-                .DisposedBy(DisposeBag);
-
-            ViewModel.Reset.Executing
-                .Subscribe(loading =>
-                {
-                    UIView.Transition(
-                        ResetPasswordButton,
-                        Animation.Timings.EnterTiming,
-                        UIViewAnimationOptions.TransitionCrossDissolve,
-                        () => ResetPasswordButton.SetTitle(loading ? "" : Resources.GetPasswordResetLink, UIControlState.Normal),
-                        null
-                    );
-                })
-                .DisposedBy(DisposeBag);
-
-            //Visibility
-            ViewModel.PasswordResetSuccessful
-                .Subscribe(DoneCard.Rx().IsVisibleWithFade())
-                .DisposedBy(DisposeBag);
-
-            ViewModel.PasswordResetSuccessful
-                .Invert()
-                .Subscribe(ResetPasswordButton.Rx().IsVisibleWithFade())
-                .DisposedBy(DisposeBag);
-
-            ViewModel.PasswordResetSuccessful
-                .Where(s => s == false)
-                .Subscribe(_ => EmailTextField.BecomeFirstResponder())
-                .DisposedBy(DisposeBag);
-
-            ViewModel.Reset.Executing
-                .Subscribe(ActivityIndicator.Rx().IsVisibleWithFade())
-                .DisposedBy(DisposeBag);
-
-            ViewModel.Email
-                .Select(email => email.ToString())
-                .Subscribe(EmailTextField.Rx().TextObserver())
-                .DisposedBy(DisposeBag);
-
-            //Commands
-            ResetPasswordButton.Rx()
-                .BindAction(ViewModel.Reset)
-                .DisposedBy(DisposeBag);
+            
+            prepareBindings();
         }
 
         public override void ViewDidLayoutSubviews()
@@ -129,6 +72,71 @@ namespace Toggl.Daneel.ViewControllers
             UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
 
+        private void prepareBindings()
+        {
+            EmailTextField.Rx().ShouldReturn()
+                .Subscribe(ViewModel.Reset.Inputs)
+                .DisposedBy(DisposeBag);
+
+            EmailTextField.Rx().Text()
+                .Select(Email.From)
+                .Subscribe(ViewModel.Email.OnNext)
+                .DisposedBy(DisposeBag);
+
+            ResetPasswordButton.Rx()
+                .BindAction(ViewModel.Reset)
+                .DisposedBy(DisposeBag);
+
+            ViewModel.Reset.Errors
+                .Subscribe(updateErrorMessage)
+                .DisposedBy(DisposeBag);
+
+            ViewModel.Reset.Executing
+                .Subscribe(loading =>
+                {
+                    if (loading)
+                    {
+                        updateErrorMessage(null);
+                    }
+                    updateResetPasswordButton(loading);
+                })
+                .DisposedBy(DisposeBag);
+
+            ViewModel.Reset.Executing
+                .Subscribe(ActivityIndicator.Rx().IsVisibleWithFade())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.Reset.Elements
+                .Subscribe(_ => {
+                    DoneCard.Rx().IsVisibleWithFade()(true);
+                    ResetPasswordButton.Rx().IsVisibleWithFade()(false);
+                })
+                .DisposedBy(DisposeBag);
+        }
+
+        private void updateResetPasswordButton(bool loading)
+        {
+            UIView.Transition(
+                ResetPasswordButton,
+                Animation.Timings.EnterTiming,
+                UIViewAnimationOptions.TransitionCrossDissolve,
+                () => ResetPasswordButton.SetTitle(loading ? "" : Resources.GetPasswordResetLink, UIControlState.Normal),
+                null
+            );
+        }
+
+        private void updateErrorMessage(Exception exception)
+        {
+            ErrorLabel.Text = exception != null
+                ? exception.Message
+                : string.Empty;
+
+            ErrorLabel.Hidden = exception == null;
+
+            if(exception != null)
+                EmailTextField.BecomeFirstResponder();
+        }
+
         private void prepareViews()
         {
             NavigationController.NavigationBarHidden = false;
@@ -137,10 +145,6 @@ namespace Toggl.Daneel.ViewControllers
                 Color.Login.DisabledButtonColor.ToNativeColor(),
                 UIControlState.Disabled
             );
-
-            EmailTextField.Rx().ShouldReturn()
-                .Subscribe(ViewModel.Reset.Inputs)
-                .DisposedBy(DisposeBag);
 
             ActivityIndicator.StartSpinning();
 
