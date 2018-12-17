@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reactive.Linq;
+using CoreGraphics;
 using Foundation;
 using MvvmCross.Platforms.Ios.Presenters.Attributes;
 using MvvmCross.Platforms.Ios.Views;
@@ -8,30 +9,20 @@ using MvvmCross.Plugin.Color.Platforms.Ios;
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Extensions.Reactive;
 using Toggl.Foundation;
-using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
-using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using UIKit;
-using static Toggl.Daneel.Extensions.LoginSignupViewExtensions;
-using static Toggl.Daneel.Extensions.ViewExtensions;
 
 namespace Toggl.Daneel.ViewControllers
 {
-    [MvxRootPresentation(WrapInNavigationController = true)]
     [MvxFromStoryboard("Login")]
-    public sealed partial class LoginViewController : ReactiveViewController<LoginViewModel>
+    public sealed partial class LoginViewController : KeyboardAwareViewController<LoginViewModel>
     {
-        private const int iPhoneSeScreenHeight = 568;
-
-        private bool keyboardIsOpen = false;
-
-        private const int topConstraintForBiggerScreens = 72;
-        private const int topConstraintForBiggerScreensWithKeyboard = 40;
-
-        private const int emailTopConstraint = 42;
-        private const int emailTopConstraintWithKeyboard = 12;
+        private readonly UIImageView titleImage = new UIImageView(UIImage.FromBundle("togglLogo"));
+        private readonly UIBarButtonItem backButton =
+            new UIBarButtonItem(UIImage.FromBundle("icBackNoPadding"), UIBarButtonItemStyle.Plain, null);
+        private readonly UIImage backIndicatorImage = UIImage.FromBundle("icBackNoPadding");
 
         public LoginViewController(IntPtr handle) : base(handle)
         {
@@ -44,85 +35,52 @@ namespace Toggl.Daneel.ViewControllers
             prepareViews();
 
             prepareBindings();
+        }
 
-            NavigationController.NavigationBarHidden = true;
-            PasswordManagerButton.Hidden = !ViewModel.IsPasswordManagerAvailable;
+        protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
+        {
+            UIView.Animate(e.AnimationDuration, () =>
+            {
+                BottomToSafeAreaConstraint.Constant = e.FrameEnd.Height;
+                View.LayoutIfNeeded();
+            });
+        }
 
-            UIKeyboard.Notifications.ObserveWillShow(KeyboardWillShow);
-            UIKeyboard.Notifications.ObserveWillHide(KeyboardWillHide);
-
+        protected override void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
+        {
+            UIView.Animate(e.AnimationDuration, () =>
+            {
+                BottomToSafeAreaConstraint.Constant = 0;
+                View.LayoutIfNeeded();
+            });
         }
 
         public override void ViewWillAppear(bool animated)
         {
             base.ViewWillAppear(animated);
-            NavigationController?.SetNavigationBarHidden(true, true);
-        }
-
-        public override void ViewWillDisappear(bool animated)
-        {
-            base.ViewWillDisappear(animated);
-            NavigationController?.SetNavigationBarHidden(false, true);
-        }
-
-        public override void ViewDidLayoutSubviews()
-        {
-            base.ViewDidLayoutSubviews();
-
-            if (View.Frame.Height > iPhoneSeScreenHeight && !keyboardIsOpen)
-                TopConstraint.Constant = topConstraintForBiggerScreens;
-
-            SignupCard.SetupBottomCard();
-            GoogleLoginButton.SetupGoogleButton();
-        }
-
-        public override void ViewDidAppear(bool animated)
-        {
-            base.ViewDidAppear(animated);
-            ActivityIndicator.Alpha = 0;
+            NavigationItem.TitleView = titleImage;
+            LoginWithEmailTextField.BecomeFirstResponder();
             ActivityIndicator.StartSpinning();
-            PasswordTextField.ResignFirstResponder();
-        }
-
-        private void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
-        {
-            keyboardIsOpen = true;
-            if (View.Frame.Height > iPhoneSeScreenHeight)
-            {
-                TopConstraint.Constant = topConstraintForBiggerScreensWithKeyboard;
-            }
-            else
-            {
-                EmailFieldTopConstraint.Constant = emailTopConstraintWithKeyboard;
-            }
-            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
-        }
-
-        private void KeyboardWillHide(object sender, UIKeyboardEventArgs e)
-        {
-            keyboardIsOpen = false;
-            if (View.Frame.Height > iPhoneSeScreenHeight)
-            {
-                TopConstraint.Constant = topConstraintForBiggerScreens;
-            }
-            else
-            {
-                EmailFieldTopConstraint.Constant = emailTopConstraint;
-            }
-            UIView.Animate(Animation.Timings.EnterTiming, () => View.LayoutIfNeeded());
         }
 
         private void prepareBindings()
         {
-            EmailTextField.Rx().Text()
+            backButton.Rx()
+                .BindAction(ViewModel.Back)
+                .DisposedBy(DisposeBag);
+
+            // First Screen
+            LoginWithEmailTextField.Rx().Text()
                 .Subscribe(ViewModel.EmailRelay.Accept)
                 .DisposedBy(DisposeBag);
 
-            PasswordTextField.Rx().Text()
-                .Subscribe(ViewModel.PasswordRelay.Accept)
+            LoginWithEmailTextField.Rx().ShouldReturn()
+                .SelectUnit()
+                .Subscribe(ViewModel.LoginWithEmail.Inputs)
                 .DisposedBy(DisposeBag);
 
-            LoginButton.Rx()
+            LoginWithEmailButton
+                .Rx()
                 .BindAction(ViewModel.LoginWithEmail)
                 .DisposedBy(DisposeBag);
 
@@ -130,108 +88,177 @@ namespace Toggl.Daneel.ViewControllers
                 .BindAction(ViewModel.LoginWithGoogle)
                 .DisposedBy(DisposeBag);
 
-            ViewModel.LoginWithGoogle.Errors.Debug("ERROR").Subscribe()
+            PasswordMaskingControl.Rx().Tap()
+                .Subscribe(ViewModel.TogglePasswordVisibility.Inputs)
                 .DisposedBy(DisposeBag);
 
-            ShowPasswordButton.Rx()
-                .BindAction(ViewModel.TogglePasswordVisibility)
-                .DisposedBy(DisposeBag);
-
+            // Second Screen
             ForgotPasswordButton.Rx()
                 .BindAction(ViewModel.ForgotPassword)
                 .DisposedBy(DisposeBag);
 
-            ViewModel.EmailRelay
-                .Subscribe(EmailTextField.Rx().TextObserver())
+            LoginButton.Rx()
+                .BindAction(ViewModel.Login)
                 .DisposedBy(DisposeBag);
 
-            ViewModel.IsLoggingIn.Select(loginButtonTitle)
-                .Subscribe(LoginButton.Rx().AnimatedTitle())
+            PasswordTextField.Rx().ShouldReturn()
+                .SelectUnit()
+                .Subscribe(ViewModel.Login.Inputs)
+                .DisposedBy(DisposeBag);
+
+            SecondScreenEmailTextField.Rx().ShouldReturn()
+                .Subscribe(_ => PasswordTextField.BecomeFirstResponder())
+                .DisposedBy(DisposeBag);
+
+            SecondScreenEmailTextField.Rx().Text()
+                .Subscribe(ViewModel.EmailRelay.Accept)
+                .DisposedBy(DisposeBag);
+
+            ContactUsButton.Rx()
+                .BindAction(ViewModel.ContactUs)
+                .DisposedBy(DisposeBag);
+
+            ViewModel.EmailRelay
+                .Subscribe(SecondScreenEmailTextField.Rx().TextObserver())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.IsEmailFieldEdittable
+                .Subscribe(SecondScreenEmailTextField.Rx().Enabled())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.IsPasswordMasked
+                .Subscribe(PasswordTextField.Rx().SecureTextEntry())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.IsShowPasswordButtonVisible
+                .Subscribe(PasswordMaskingControl.Rx().IsVisible())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.IsPasswordMasked
+                .Subscribe(setMaskingIcon)
+                .DisposedBy(DisposeBag);
+
+            PasswordTextField.Rx().Text()
+                .Subscribe(ViewModel.PasswordRelay.Accept)
+                .DisposedBy(DisposeBag);
+
+            ViewModel.SuggestContactSupport
+                .Subscribe(ContactUsButton.Rx().AnimatedIsVisible())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.ClearPasswordScreenError
+                .Select(_ => string.Empty)
+                .Subscribe(SecondScreenErrorLabel.Rx().Text())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.Login.Errors
+                .Select(e => e.Message)
+                .Subscribe(SecondScreenErrorLabel.Rx().Text())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.LoginWithGoogle.Errors
+                .Select(e => e.Message)
+                .Subscribe(LoginWithEmailErrorLabel.Rx().Text())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.ClearEmailScreenError
+                .Select(_ => string.Empty)
+                .Subscribe(LoginWithEmailErrorLabel.Rx().Text())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.EmailRelay
+                .Subscribe(LoginWithEmailTextField.Rx().TextObserver())
+                .DisposedBy(DisposeBag);
+
+            ViewModel.PasswordRelay
+                .Subscribe(PasswordTextField.Rx().TextObserver())
                 .DisposedBy(DisposeBag);
 
             ViewModel.LoginWithEmail.Errors
                 .Select(e => e.Message)
-                .Subscribe(ErrorLabel.Rx().Text())
-                .DisposedBy(DisposeBag);
-
-            ViewModel.LoginWithEmail.Errors
-                .SelectValue(true)
-                .Subscribe(ErrorLabel.Rx().AnimatedIsVisible())
+                .Subscribe(LoginWithEmailErrorLabel.Rx().Text())
                 .DisposedBy(DisposeBag);
 
             ViewModel.IsLoggingIn
                 .Subscribe(ActivityIndicator.Rx().IsVisibleWithFade())
                 .DisposedBy(DisposeBag);
 
-            ViewModel.IsPasswordMasked
-                .Skip(1)
-                .Subscribe(PasswordTextField.Rx().SecureTextEntry())
+            ViewModel.IsLoggingIn
+                .Subscribe(UIApplication.SharedApplication.Rx().NetworkActivityIndicatorVisible())
                 .DisposedBy(DisposeBag);
 
-            ViewModel.IsShowPasswordButtonVisible
-                .Subscribe(ShowPasswordButton.Rx().IsVisible())
+            ViewModel.IsLoggingIn.Select(loginButtonTitle)
+                .Subscribe(LoginButton.Rx().AnimatedTitle())
                 .DisposedBy(DisposeBag);
+
+            ViewModel.IsInSecondScreen
+                .Invert()
+                .Do(isGoingBack =>
+                {
+                    if (isGoingBack)
+                    {
+                        LoginWithEmailTextField.BecomeFirstResponder();
+                    }
+                })
+                .Subscribe(FirstScreenWrapperView.Rx().AnimatedIsVisible());
+
+            ViewModel.IsInSecondScreen
+                .Do(isSecondScreen =>
+                {
+                    if (isSecondScreen)
+                    {
+                        PasswordTextField.BecomeFirstResponder();
+                    }
+                })
+                .Subscribe(SecondScreenWrapperView.Rx().AnimatedIsVisible());
 
             ViewModel.Shake
-                .Subscribe(shakeTargets =>
+                .Subscribe(shakeTarget =>
                 {
-                    if (shakeTargets.HasFlag(LoginViewModel.ShakeTargets.Email))
-                        EmailTextField.Shake();
-
-                    if (shakeTargets.HasFlag(LoginViewModel.ShakeTargets.Password))
-                        PasswordTextField.Shake();
+                    switch (shakeTarget)
+                    {
+                        case LoginViewModel.ShakeTarget.Email:
+                            LoginWithEmailTextField.Shake();
+                            LoginWithEmailTextField.BecomeFirstResponder();
+                            break;
+                        case LoginViewModel.ShakeTarget.Password:
+                            PasswordTextField.Shake();
+                            PasswordTextField.BecomeFirstResponder();
+                            break;
+                    }
                 })
                 .DisposedBy(DisposeBag);
         }
 
         private void prepareViews()
         {
-            NavigationController.NavigationBarHidden = true;
-
-            LoginButton.SetTitleColor(
-                Color.Login.DisabledButtonColor.ToNativeColor(),
-                UIControlState.Disabled
-            );
-
-            EmailTextField.ShouldReturn += _ =>
-            {
-                PasswordTextField.BecomeFirstResponder();
-                return false;
-            };
-
-            PasswordTextField.ShouldReturn += _ =>
-            {
-                PasswordTextField.ResignFirstResponder();
-                // TODO: login here somehow
-                return false;
-            };
-
-            View.AddGestureRecognizer(new UITapGestureRecognizer(() =>
-            {
-                EmailTextField.ResignFirstResponder();
-                PasswordTextField.ResignFirstResponder();
-            }));
-
-            prepareForgotPasswordButton();
-            ShowPasswordButton.SetupShowPasswordButton();
+            setupGoogleButton();
+            NavigationItem.LeftBarButtonItem = backButton;
+            NavigationController.NavigationBar.BackIndicatorImage = backIndicatorImage;
+            NavigationController.NavigationBar.BackIndicatorTransitionMaskImage = backIndicatorImage;
+            LoginWithEmailErrorLabel.Text = string.Empty;
+            SecondScreenErrorLabel.Text = string.Empty;
+            ContactUsButton.Hidden = true;
         }
 
-        private void prepareForgotPasswordButton()
+        private void setupGoogleButton()
         {
-            var boldFont = UIFont.SystemFontOfSize(12, UIFontWeight.Medium);
-            var color = Color.Login.ForgotPassword.ToNativeColor();
-            var text = new NSMutableAttributedString(
-                Resources.LoginForgotPassword, foregroundColor: color);
-            var boldText = new NSAttributedString(
-                Resources.LoginGetHelpLoggingIn,
-                foregroundColor: color,
-                font: boldFont);
-            text.Append(boldText);
-            ForgotPasswordButton.SetAttributedTitle(text, UIControlState.Normal);
+            var layer = GoogleLoginButton.Layer;
+            layer.MasksToBounds = true;
+            layer.CornerRadius = 8;
+            layer.BorderColor = Color.Signup.EnabledButtonColor.ToNativeColor().CGColor;
+            layer.BorderWidth = 1;
         }
 
         private string loginButtonTitle(bool isLoading)
             => isLoading ? "" : Resources.LoginTitle;
+
+        private void setMaskingIcon(bool masked)
+        {
+            var imageName = masked ? "icPasswordMasked" : "icPasswordUnmasked";
+            PasswordMaskingImageView.Image = UIImage.FromBundle(imageName);
+        }
+
     }
 }
 

@@ -16,17 +16,15 @@ namespace Toggl.Daneel.ViewControllers
 		Toggl.Daneel.Views.ActivityIndicatorView ActivityIndicator { get; set; }
 
 		[Outlet]
-		UIKit.NSLayoutConstraint EmailFieldTopConstraint { get; set; }
+		UIKit.NSLayoutConstraint BottomToSafeAreaConstraint { get; set; }
 
 		[Outlet]
-		[GeneratedCode ("iOS Designer", "1.0")]
-		Toggl.Daneel.Views.LoginTextField EmailTextField { get; set; }
+		UIKit.UIButton ContactUsButton { get; set; }
 
 		[Outlet]
-		UIKit.UILabel ErrorLabel { get; set; }
+		UIKit.UIView FirstScreenWrapperView { get; set; }
 
 		[Outlet]
-		[GeneratedCode ("iOS Designer", "1.0")]
 		UIKit.UIButton ForgotPasswordButton { get; set; }
 
 		[Outlet]
@@ -36,23 +34,31 @@ namespace Toggl.Daneel.ViewControllers
 		UIKit.UIButton LoginButton { get; set; }
 
 		[Outlet]
-		UIKit.UIImageView LogoImageView { get; set; }
+		UIKit.UIButton LoginWithEmailButton { get; set; }
 
 		[Outlet]
-		UIKit.UIButton PasswordManagerButton { get; set; }
+		UIKit.UILabel LoginWithEmailErrorLabel { get; set; }
 
 		[Outlet]
-		[GeneratedCode ("iOS Designer", "1.0")]
+		Toggl.Daneel.Views.LoginTextField LoginWithEmailTextField { get; set; }
+
+		[Outlet]
+		UIKit.UIControl PasswordMaskingControl { get; set; }
+
+		[Outlet]
+		UIKit.UIImageView PasswordMaskingImageView { get; set; }
+
+		[Outlet]
 		Toggl.Daneel.Views.LoginTextField PasswordTextField { get; set; }
 
 		[Outlet]
-		UIKit.UIButton ShowPasswordButton { get; set; }
+		Toggl.Daneel.Views.LoginTextField SecondScreenEmailTextField { get; set; }
 
 		[Outlet]
-		UIKit.UIView SignupCard { get; set; }
+		UIKit.UILabel SecondScreenErrorLabel { get; set; }
 
 		[Outlet]
-		UIKit.NSLayoutConstraint TopConstraint { get; set; }
+		UIKit.UIView SecondScreenWrapperView { get; set; }
 		
 		void ReleaseDesignerOutlets ()
 		{
@@ -61,14 +67,14 @@ namespace Toggl.Daneel.ViewControllers
 				ActivityIndicator = null;
 			}
 
-			if (EmailTextField != null) {
-				EmailTextField.Dispose ();
-				EmailTextField = null;
+			if (BottomToSafeAreaConstraint != null) {
+				BottomToSafeAreaConstraint.Dispose ();
+				BottomToSafeAreaConstraint = null;
 			}
 
-			if (ErrorLabel != null) {
-				ErrorLabel.Dispose ();
-				ErrorLabel = null;
+			if (FirstScreenWrapperView != null) {
+				FirstScreenWrapperView.Dispose ();
+				FirstScreenWrapperView = null;
 			}
 
 			if (ForgotPasswordButton != null) {
@@ -86,14 +92,29 @@ namespace Toggl.Daneel.ViewControllers
 				LoginButton = null;
 			}
 
-			if (LogoImageView != null) {
-				LogoImageView.Dispose ();
-				LogoImageView = null;
+			if (LoginWithEmailButton != null) {
+				LoginWithEmailButton.Dispose ();
+				LoginWithEmailButton = null;
 			}
 
-			if (PasswordManagerButton != null) {
-				PasswordManagerButton.Dispose ();
-				PasswordManagerButton = null;
+			if (LoginWithEmailErrorLabel != null) {
+				LoginWithEmailErrorLabel.Dispose ();
+				LoginWithEmailErrorLabel = null;
+			}
+
+			if (LoginWithEmailTextField != null) {
+				LoginWithEmailTextField.Dispose ();
+				LoginWithEmailTextField = null;
+			}
+
+			if (PasswordMaskingControl != null) {
+				PasswordMaskingControl.Dispose ();
+				PasswordMaskingControl = null;
+			}
+
+			if (PasswordMaskingImageView != null) {
+				PasswordMaskingImageView.Dispose ();
+				PasswordMaskingImageView = null;
 			}
 
 			if (PasswordTextField != null) {
@@ -101,24 +122,24 @@ namespace Toggl.Daneel.ViewControllers
 				PasswordTextField = null;
 			}
 
-			if (ShowPasswordButton != null) {
-				ShowPasswordButton.Dispose ();
-				ShowPasswordButton = null;
+			if (SecondScreenEmailTextField != null) {
+				SecondScreenEmailTextField.Dispose ();
+				SecondScreenEmailTextField = null;
 			}
 
-			if (SignupCard != null) {
-				SignupCard.Dispose ();
-				SignupCard = null;
+			if (SecondScreenErrorLabel != null) {
+				SecondScreenErrorLabel.Dispose ();
+				SecondScreenErrorLabel = null;
 			}
 
-			if (TopConstraint != null) {
-				TopConstraint.Dispose ();
-				TopConstraint = null;
+			if (SecondScreenWrapperView != null) {
+				SecondScreenWrapperView.Dispose ();
+				SecondScreenWrapperView = null;
 			}
 
-			if (EmailFieldTopConstraint != null) {
-				EmailFieldTopConstraint.Dispose ();
-				EmailFieldTopConstraint = null;
+			if (ContactUsButton != null) {
+				ContactUsButton.Dispose ();
+				ContactUsButton = null;
 			}
 		}
 	}

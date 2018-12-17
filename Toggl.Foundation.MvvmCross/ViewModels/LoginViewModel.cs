@@ -3,7 +3,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
-using MvvmCross.Navigation;
+using System.Threading.Tasks;
 using MvvmCross.ViewModels;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Exceptions;
@@ -11,7 +11,6 @@ using Toggl.Foundation.Login;
 using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.Parameters;
 using Toggl.Foundation.MvvmCross.Services;
-using Toggl.Foundation.MvvmCross.ViewModels.UserAccess;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
@@ -24,8 +23,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     [Preserve(AllMembers = true)]
     public sealed class LoginViewModel : MvxViewModel<CredentialsParameter>
     {
-        [Flags]
-        public enum ShakeTargets
+        public enum ShakeTarget
         {
             None = 0,
             Email = 1,
@@ -47,7 +45,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly ITimeService timeService;
         private readonly ISchedulerProvider schedulerProvider;
 
-        private readonly Subject<ShakeTargets> shakeSubject = new Subject<ShakeTargets>();
+        private readonly Subject<ShakeTarget> shakeSubject = new Subject<ShakeTarget>();
         private readonly BehaviorSubject<bool> isPasswordMaskedSubject = new BehaviorSubject<bool>(true);
         private readonly int errorCountBeforeShowingContactSupportSuggestion = 2;
         private readonly Exception invalidEmailException = new Exception(Resources.EnterValidEmail);
@@ -58,20 +56,21 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public BehaviorRelay<string> EmailRelay { get; } = new BehaviorRelay<string>(string.Empty);
         public BehaviorRelay<string> PasswordRelay { get; } = new BehaviorRelay<string>(string.Empty);
         public IObservable<bool> IsLoggingIn { get; }
-        public IObservable<ShakeTargets> Shake { get; }
+        public IObservable<ShakeTarget> Shake { get; }
         public IObservable<bool> IsPasswordMasked { get; }
         public IObservable<bool> IsShowPasswordButtonVisible { get; }
         public IObservable<bool> SuggestContactSupport { get; }
-        public UIAction LoginWithEmail { get; }
+        public UIAction Login { get; }
         public IObservable<Unit> ClearPasswordScreenError { get; }
         public UIAction LoginWithGoogle { get; }
         public UIAction TogglePasswordVisibility { get; }
         public UIAction ForgotPassword { get; }
-        public UIAction ContinueToPaswordScreen { get; }
-        public UIAction BackToSignUpAndLoginChoice { get; }
-        public UIAction BackToEmailScreen { get; }
+        public UIAction LoginWithEmail { get; }
+        public UIAction Back { get; }
+        public UIAction ContactUs { get; }
         public IObservable<Unit> ClearEmailScreenError { get; }
-        public IObservable<bool> EmailFieldEdittable { get; }
+        public IObservable<bool> IsEmailFieldEdittable { get; }
+        public IObservable<bool> IsInSecondScreen { get; }
 
         public LoginViewModel(
             IUserAccessManager userAccessManager,
@@ -111,7 +110,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             var isReturningToEmail = isEmailState.Skip(1);
 
             Shake = shakeSubject
-                .AsDriver(ShakeTargets.None, this.schedulerProvider);
+                .AsDriver(ShakeTarget.None, this.schedulerProvider);
 
             IsPasswordMasked = isPasswordMaskedSubject
                 .DistinctUntilChanged()
@@ -124,7 +123,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             IsPasswordManagerAvailable = passwordManagerService.IsAvailable;
 
-            LoginWithEmail = UIAction.FromObservable(login);
+            Login = UIAction.FromObservable(login);
 
             ClearPasswordScreenError = Observable
                 .CombineLatest(isEmailValid, isPasswordValid, CommonFunctions.And)
@@ -136,42 +135,46 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             LoginWithGoogle = UIAction.FromObservable(loginWithGoogle);
 
             var isLoggingIn = Observable
-                .CombineLatest(LoginWithEmail.Executing, LoginWithGoogle.Executing, CommonFunctions.Or);
+                .CombineLatest(Login.Executing, LoginWithGoogle.Executing, CommonFunctions.Or);
 
             IsLoggingIn = isLoggingIn
                 .AsDriver(schedulerProvider);
 
-            ForgotPassword = UIAction.FromObservable(() => forgotPassword(EmailRelay.Value));
+            ForgotPassword = UIAction.FromObservable(() => forgotPassword(EmailRelay.Value), isLoggingIn.Invert());
 
             TogglePasswordVisibility =
                 UIAction.FromAction(() => isPasswordMaskedSubject.OnNext(!isPasswordMaskedSubject.Value));
 
-            ContinueToPaswordScreen = UIAction.FromObservable(continueToPasswordScreen);
+            LoginWithEmail = UIAction.FromObservable(loginWithEmail);
 
             ClearEmailScreenError = isEmailValid
                 .Where(CommonFunctions.Identity)
                 .SelectUnit()
                 .ObserveOn(schedulerProvider.MainScheduler);
 
-            SuggestContactSupport = Observable.Merge(LoginWithEmail.Errors, LoginWithGoogle.Errors)
+            SuggestContactSupport = Observable.Merge(Login.Errors, LoginWithGoogle.Errors)
                 .Skip(errorCountBeforeShowingContactSupportSuggestion)
                 .SelectValue(true)
                 .StartWith(false)
                 .AsDriver(false, schedulerProvider);
 
-            var incorrectPasswordExceptions = LoginWithEmail
+            var incorrectPasswordExceptions = Login
                 .Errors
                 .Select(e => e == incorrectPasswordException);
 
-            EmailFieldEdittable = Observable
+            IsEmailFieldEdittable = Observable
                 .CombineLatest(isEmailState, incorrectPasswordExceptions, CommonFunctions.Or)
                 .StartWith(false)
                 .AsDriver(schedulerProvider);
 
-            BackToSignUpAndLoginChoice = UIAction.FromAction(() => navigationService.Close(this));
+            Back = UIAction.FromAction(back, isLoggingIn.Invert());
 
-            BackToEmailScreen =
-                UIAction.FromAction(backToEmail, isLoggingIn.Invert());
+            IsInSecondScreen = state
+                .Select(s => s == State.EmailAndPassword)
+                .AsObservable()
+                .AsDriver(schedulerProvider);
+
+            ContactUs = UIAction.FromAsync(contactUs);
         }
 
         public override void Prepare(CredentialsParameter parameter)
@@ -180,13 +183,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             PasswordRelay.Accept(parameter.Password.ToString());
         }
 
-        private IObservable<Unit> continueToPasswordScreen()
+        private IObservable<Unit> loginWithEmail()
         {
             if (!Email.From(EmailRelay.Value).IsValid)
             {
                 return Observable.Return(Unit.Default).Do(_ =>
                 {
-                    shakeSubject.OnNext(ShakeTargets.Email);
+                    shakeSubject.OnNext(ShakeTarget.Email);
                     throw invalidEmailException;
                 });
             }
@@ -210,7 +213,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 return Observable.Return(Unit.Default).Do(_ =>
                 {
-                    shakeSubject.OnNext(ShakeTargets.Email);
+                    shakeSubject.OnNext(ShakeTarget.Email);
                     throw invalidEmailException;
                 });
             }
@@ -219,7 +222,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             {
                 return Observable.Return(Unit.Default).Do(_ =>
                 {
-                    shakeSubject.OnNext(ShakeTargets.Password);
+                    shakeSubject.OnNext(ShakeTarget.Password);
                     throw new Exception(Resources.PasswordTooShort);
                 });
             }
@@ -269,10 +272,23 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .ObserveOn(schedulerProvider.MainScheduler);
         }
 
-        private void backToEmail()
+        private void back()
         {
-            state.OnNext(State.Email);
-            PasswordRelay.Accept(string.Empty);
+            switch (state.Value)
+            {
+                case State.Email:
+                    navigationService.Close(this);
+                    break;
+                case State.EmailAndPassword:
+                    state.OnNext(State.Email);
+                    PasswordRelay.Accept(string.Empty);
+                    break;
+            }
         }
+
+        private Task contactUs() =>
+            navigationService
+                .Navigate<BrowserViewModel, BrowserParameters>(
+                    BrowserParameters.WithUrlAndTitle(Resources.ContactUsUrl, Resources.ContactUs));
     }
 }

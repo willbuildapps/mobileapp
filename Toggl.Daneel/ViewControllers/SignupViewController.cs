@@ -12,8 +12,6 @@ using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using UIKit;
-using static Toggl.Daneel.Extensions.LoginSignupViewExtensions;
-using static Toggl.Daneel.Extensions.ViewExtensions;
 
 
 namespace Toggl.Daneel.ViewControllers
@@ -165,9 +163,6 @@ namespace Toggl.Daneel.ViewControllers
 
             if (View.Frame.Height > iPhoneSeScreenHeight && !keyboardIsOpen)
                 TopConstraint.Constant = topConstraintForBiggerScreens;
-
-            LoginCard.SetupBottomCard();
-            GoogleSignupButton.SetupGoogleButton();
         }
 
         private void KeyboardWillShow(object sender, UIKeyboardEventArgs e)
@@ -227,8 +222,6 @@ namespace Toggl.Daneel.ViewControllers
                 EmailTextField.ResignFirstResponder();
                 PasswordTextField.ResignFirstResponder();
             }));
-
-            ShowPasswordButton.SetupShowPasswordButton();
         }
 
         private string signupButtonTitle(bool isLoading)

@@ -501,4 +501,13 @@ account is not set up</value>
     <data name="PasswordTooShort">
         <value>Password should be at least 6 characters</value>
     </data>
+    <data name="LoginWithEmail">
+        <value>Log in with email</value>
+    </data>
+    <data name="ContactUs">
+        <value>Contact Us</value>
+    </data>
+    <data name="ContactUsUrl">
+        <value>https://support.toggl.com/</value>
+    </data>
 </root>
