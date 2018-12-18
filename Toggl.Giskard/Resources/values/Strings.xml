@@ -114,6 +114,11 @@ understand and agree to Toggl\'s</string>
     <string name="Uhoh">Uh oh.</string>
     <string name="SetDefaultWorkspaceTitle">Set default workspace</string>
     <string name="SetDefaultWorkspaceDescription">Your time will be tracked automatically from this workspace. You can cange this later from the Settings.</string>
+    <string name="NeedHelpContactUs">Need help? <b><u>Contact us!</u></b></string>
+    <string name="LoggingInWith">Logging in with:</string>
+    <string name="LogInWithEmail">Log in with email</string>
+    <string name="LogInWithGoogle">Log in with Google</string>
+    <string name="ForgotPasswordLabel">Forgot password?</string>
 
     <string name="ReportsCalendarShortcutsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsCalendarShortcutsTemplateSelector, Toggl.Giskard</string>
     <string name="ReportsCalendarTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsCalendarTemplateSelector, Toggl.Giskard</string>

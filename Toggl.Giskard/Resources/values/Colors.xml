@@ -37,4 +37,7 @@
     <color name="popupBlueBackground">#328FFF</color>
     <color name="lightGray48Opacity">#7AFAFBFC</color>
     <color name="textEditBackgroundTint">#E2E2E2</color>
+    <color name="blueLabel">#328FFF</color>
+    <color name="editTextColor">#DE000000</color>
+    <color name="horizontalRuler">#CECECE</color>
 </resources>
