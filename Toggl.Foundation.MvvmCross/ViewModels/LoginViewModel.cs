@@ -158,12 +158,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 .StartWith(false)
                 .AsDriver(false, schedulerProvider);
 
-            var incorrectPasswordExceptions = Login
+            var emailRelatedExceptions = Login
                 .Errors
-                .Select(e => e == incorrectPasswordException);
+                .Select(e => e == incorrectPasswordException || e == invalidEmailException);
 
             IsEmailFieldEdittable = Observable
-                .CombineLatest(isEmailState, incorrectPasswordExceptions, CommonFunctions.Or)
+                .CombineLatest(isEmailState, emailRelatedExceptions, CommonFunctions.Or)
                 .StartWith(false)
                 .AsDriver(schedulerProvider);
 

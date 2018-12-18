@@ -540,6 +540,23 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 observer.LastValue().Should().BeTrue();
             }
+
+            [Fact, LogIfTooSlow]
+            public void EmitsTrueWhenReceiveEmailInvalidException()
+            {
+                ViewModel.EmailRelay.Accept(ValidEmail.ToString());
+                ViewModel.PasswordRelay.Accept(ValidPassword.ToString());
+                var exception = new Exception(Resources.EnterValidEmail);
+                UserAccessManager.Login(Arg.Any<Email>(), Arg.Any<Password>())
+                    .Returns(Observable.Throw<ITogglDataSource>(exception));
+                var observer = TestScheduler.CreateObserver<bool>();
+                ViewModel.IsEmailFieldEdittable.Subscribe(observer);
+
+                ViewModel.Login.Execute();
+                TestScheduler.Start();
+
+                observer.LastValue().Should().BeTrue();
+            }
         }
 
         public sealed class TheShakeTargetsProperty : LoginViewModelTest
