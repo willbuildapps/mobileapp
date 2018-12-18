@@ -24,7 +24,7 @@ namespace Toggl.Giskard.Activities
     [MvxActivityPresentation]
     [Activity(Theme = "@style/AppTheme.WhiteStatusBar",
               ScreenOrientation = ScreenOrientation.Portrait,
-              WindowSoftInputMode = SoftInput.AdjustPan | SoftInput.StateHidden,
+              WindowSoftInputMode = SoftInput.AdjustResize | SoftInput.StateHidden,
               ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public sealed partial class SignupOrLoginChoiceActivity : ReactiveActivity<SignupOrLoginChoiceViewModel>
     {
