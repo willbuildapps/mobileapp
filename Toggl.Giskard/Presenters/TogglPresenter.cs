@@ -12,6 +12,7 @@ using MvvmCross.ViewModels;
 using MvvmCross.Views;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.MvvmCross.ViewModels.Hints;
+using Toggl.Foundation.MvvmCross.ViewModels.UserAccess;
 using Toggl.Giskard.Activities;
 
 namespace Toggl.Giskard.Presenters
@@ -21,8 +22,7 @@ namespace Toggl.Giskard.Presenters
         private readonly HashSet<Type> clearBackStackTypes = new HashSet<Type>
         {
             typeof(MainViewModel),
-            typeof(LoginViewModel),
-            typeof(SignupViewModel),
+            typeof(SignupOrLoginChoiceViewModel),
             typeof(OnboardingViewModel),
             typeof(TokenResetViewModel),
             typeof(OutdatedAppViewModel)
