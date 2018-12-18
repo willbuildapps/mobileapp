@@ -65,11 +65,11 @@ namespace Toggl.Daneel.ViewControllers
 
         private void prepareBindings()
         {
+            // First screen inputs binding
             backButton.Rx()
                 .BindAction(ViewModel.Back)
                 .DisposedBy(DisposeBag);
 
-            // First Screen
             LoginWithEmailTextField.Rx().Text()
                 .Subscribe(ViewModel.EmailRelay.Accept)
                 .DisposedBy(DisposeBag);
@@ -79,8 +79,7 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(ViewModel.LoginWithEmail.Inputs)
                 .DisposedBy(DisposeBag);
 
-            LoginWithEmailButton
-                .Rx()
+            LoginWithEmailButton.Rx()
                 .BindAction(ViewModel.LoginWithEmail)
                 .DisposedBy(DisposeBag);
 
@@ -92,18 +91,22 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(ViewModel.TogglePasswordVisibility.Inputs)
                 .DisposedBy(DisposeBag);
 
-            // Second Screen
+            // Second screen inputs binding
+            PasswordTextField.Rx().Text()
+                .Subscribe(ViewModel.PasswordRelay.Accept)
+                .DisposedBy(DisposeBag);
+
+            PasswordTextField.Rx().ShouldReturn()
+                .SelectUnit()
+                .Subscribe(ViewModel.Login.Inputs)
+                .DisposedBy(DisposeBag);
+
             ForgotPasswordButton.Rx()
                 .BindAction(ViewModel.ForgotPassword)
                 .DisposedBy(DisposeBag);
 
             LoginButton.Rx()
                 .BindAction(ViewModel.Login)
-                .DisposedBy(DisposeBag);
-
-            PasswordTextField.Rx().ShouldReturn()
-                .SelectUnit()
-                .Subscribe(ViewModel.Login.Inputs)
                 .DisposedBy(DisposeBag);
 
             SecondScreenEmailTextField.Rx().ShouldReturn()
@@ -118,6 +121,7 @@ namespace Toggl.Daneel.ViewControllers
                 .BindAction(ViewModel.ContactUs)
                 .DisposedBy(DisposeBag);
 
+            // Output bindings
             ViewModel.EmailRelay
                 .Subscribe(SecondScreenEmailTextField.Rx().TextObserver())
                 .DisposedBy(DisposeBag);
@@ -136,10 +140,6 @@ namespace Toggl.Daneel.ViewControllers
 
             ViewModel.IsPasswordMasked
                 .Subscribe(setMaskingIcon)
-                .DisposedBy(DisposeBag);
-
-            PasswordTextField.Rx().Text()
-                .Subscribe(ViewModel.PasswordRelay.Accept)
                 .DisposedBy(DisposeBag);
 
             ViewModel.SuggestContactSupport
@@ -200,7 +200,8 @@ namespace Toggl.Daneel.ViewControllers
                         LoginWithEmailTextField.BecomeFirstResponder();
                     }
                 })
-                .Subscribe(FirstScreenWrapperView.Rx().AnimatedIsVisible());
+                .Subscribe(FirstScreenWrapperView.Rx().AnimatedIsVisible())
+                .DisposedBy(DisposeBag);
 
             ViewModel.IsInSecondScreen
                 .Do(isSecondScreen =>
@@ -210,7 +211,8 @@ namespace Toggl.Daneel.ViewControllers
                         PasswordTextField.BecomeFirstResponder();
                     }
                 })
-                .Subscribe(SecondScreenWrapperView.Rx().AnimatedIsVisible());
+                .Subscribe(SecondScreenWrapperView.Rx().AnimatedIsVisible())
+                .DisposedBy(DisposeBag);
 
             ViewModel.Shake
                 .Subscribe(shakeTarget =>
