@@ -118,9 +118,6 @@ namespace Toggl.Tests.UI
             app.WaitForElementWithText(SelectCountry.CountryNameLabel, countryNameToSearch);
             app.Tap(x => x.Marked(SelectCountry.CountryNameLabel).Text(countryNameToSearch));
 
-            app.WaitForElement(SignUp.PickCountry);
-            var query = app.Query(x => x.Id(SignUp.PickCountry).Text(countryNameToSearch));
-            var query2 = app.Query(countryNameToSearch);
             app.WaitForElementWithText(SignUp.PickCountry, countryNameToSearch);
         }
 
