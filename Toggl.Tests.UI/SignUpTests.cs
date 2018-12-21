@@ -74,6 +74,56 @@ namespace Toggl.Tests.UI
             app.WaitForNoElement(Main.StartTimeEntryButton);
         }
 
+        [Test]
+        public void TheSelectCountrySearchFiltersCountriesByName()
+        {
+            var countryNameToSearch = "Japan";
+
+            app.WaitForDefaultCountryToBeAutoSelected();
+            app.Tap(SignUp.PickCountry);
+            app.WaitForElement(SelectCountry.SearchCountryField);
+
+            app.WaitForNoElement(countryNameToSearch);
+
+            app.Tap(SelectCountry.SearchCountryField);
+            app.EnterText(countryNameToSearch);
+
+            app.WaitForElementWithText(SelectCountry.CountryNameLabel, countryNameToSearch);
+        }
+
+        [Test]
+        public void TheSelectCountryBackButtonGoesBackToTheSignUpScreen()
+        {
+            app.WaitForDefaultCountryToBeAutoSelected();
+
+            app.Tap(SignUp.PickCountry);
+            app.WaitForElement(SelectCountry.SearchCountryField);
+            app.DismissKeyboard();
+            app.Back();
+            app.WaitForElement(SignUp.PickCountry);
+        }
+
+
+        [Test]
+        public void SelectingACountryFromTheCountryListDisplaysItsNameInTheSignUpScreen()
+        {
+            var countryNameToSearch = "Japan";
+            app.WaitForDefaultCountryToBeAutoSelected();
+            app.Tap(SignUp.PickCountry);
+            app.WaitForElement(SelectCountry.SearchCountryField);
+
+            app.WaitForNoElement(countryNameToSearch);
+            app.Tap(SelectCountry.SearchCountryField);
+            app.EnterText(countryNameToSearch);
+            app.WaitForElementWithText(SelectCountry.CountryNameLabel, countryNameToSearch);
+            app.Tap(x => x.Marked(SelectCountry.CountryNameLabel).Text(countryNameToSearch));
+
+            app.WaitForElement(SignUp.PickCountry);
+            var query = app.Query(x => x.Id(SignUp.PickCountry).Text(countryNameToSearch));
+            var query2 = app.Query(countryNameToSearch);
+            app.WaitForElementWithText(SignUp.PickCountry, countryNameToSearch);
+        }
+
         private string randomEmail()
             => $"{Guid.NewGuid().ToString()}@toggl.space";
     }
