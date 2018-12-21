@@ -30,6 +30,13 @@
         public const string GdprButton = "SignUpGdprButton";
         public const string GdprCancelButton = "SignUpGdprCancelButton";
         public const string ErrorLabel = "SignUpError";
+        public const string PickCountry = "SelectCountry";
+    }
+
+    public static class SelectCountry
+    {
+        public const string SearchCountryField = "SelectCountrySearchField";
+        public const string CountryNameLabel = "CountryLabel";
     }
 
     public static class ForgotPassword

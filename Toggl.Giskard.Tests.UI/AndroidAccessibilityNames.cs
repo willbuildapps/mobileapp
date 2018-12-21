@@ -33,6 +33,13 @@ namespace Toggl.Tests.UI
         public const string GdprButton = "AcceptButton";
         public const string GdprCancelButton = "";
         public const string ErrorLabel = "SignUpError";
+        public const string PickCountry = "SignUpCountryName";
+    }
+
+    public static class SelectCountry
+    {
+        public const string SearchCountryField = "FilterEditText";
+        public const string CountryNameLabel = "NameTextView";
     }
 
     public static class Main
