@@ -2,7 +2,6 @@ using System.Linq;
 using NUnit.Framework;
 using Xamarin.UITest;
 
-
 namespace Toggl.Tests.UI.Extensions
 {
     public static class AppQueryExtensions
