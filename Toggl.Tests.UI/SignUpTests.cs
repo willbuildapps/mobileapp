@@ -87,7 +87,6 @@ namespace Toggl.Tests.UI
 
             app.Tap(SelectCountry.SearchCountryField);
             app.EnterText(countryNameToSearch);
-
             app.WaitForElementWithText(SelectCountry.CountryNameLabel, countryNameToSearch);
         }
 
@@ -99,7 +98,7 @@ namespace Toggl.Tests.UI
             app.Tap(SignUp.PickCountry);
             app.WaitForElement(SelectCountry.SearchCountryField);
             app.DismissKeyboard();
-            app.Back();
+            app.NavigateBack();
             app.WaitForElement(SignUp.PickCountry);
         }
 
