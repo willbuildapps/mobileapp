@@ -9,6 +9,7 @@ using Toggl.Foundation.Models;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.Suggestions;
 using Toggl.Multivac;
+using Toggl.Multivac.Models.Reports;
 
 namespace Toggl.Foundation.Interactors
 {
@@ -156,6 +157,13 @@ namespace Toggl.Foundation.Interactors
         #region Changes
 
         IInteractor<IObservable<Unit>> ObserveWorkspaceOrTimeEntriesChanges();
+
+        #endregion
+
+        #region Reports
+
+        IInteractor<IObservable<ITimeEntriesTotals>> GetReportsTotals(
+            long userId, long workspaceId, DateTimeOffset startDate, DateTimeOffset endDate);
 
         #endregion
     }

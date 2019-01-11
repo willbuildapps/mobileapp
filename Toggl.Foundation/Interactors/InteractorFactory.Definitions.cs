@@ -7,6 +7,7 @@ using Toggl.Foundation.Sync;
 using Toggl.Multivac;
 using Toggl.PrimeRadiant;
 using Toggl.PrimeRadiant.Settings;
+using Toggl.Ultrawave;
 using Toggl.Ultrawave.Network;
 
 namespace Toggl.Foundation.Interactors
@@ -17,6 +18,7 @@ namespace Toggl.Foundation.Interactors
         private readonly IIdProvider idProvider;
         private readonly ITimeService timeService;
         private readonly ITogglDataSource dataSource;
+        private readonly ITogglApi api;
         private readonly IUserPreferences userPreferences;
         private readonly IAnalyticsService analyticsService;
         private readonly INotificationService notificationService;
@@ -33,6 +35,7 @@ namespace Toggl.Foundation.Interactors
             IIdProvider idProvider,
             ITimeService timeService,
             ITogglDataSource dataSource,
+            ITogglApi api,
             IUserPreferences userPreferences,
             IAnalyticsService analyticsService,
             INotificationService notificationService,
@@ -46,6 +49,7 @@ namespace Toggl.Foundation.Interactors
             IStopwatchProvider stopwatchProvider)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
+            Ensure.Argument.IsNotNull(api, nameof(api));
             Ensure.Argument.IsNotNull(idProvider, nameof(idProvider));
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(userPreferences, nameof(userPreferences));
@@ -61,6 +65,7 @@ namespace Toggl.Foundation.Interactors
             Ensure.Argument.IsNotNull(stopwatchProvider, nameof(stopwatchProvider));
 
             this.dataSource = dataSource;
+            this.api = api;
             this.idProvider = idProvider;
             this.timeService = timeService;
             this.userPreferences = userPreferences;
