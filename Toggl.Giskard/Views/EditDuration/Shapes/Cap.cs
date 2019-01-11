@@ -15,6 +15,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         public float Radius { get; set; }
 
         public PointF Position { get; set; }
+        public bool ShowOnlyBackground { get; set; }
 
         public Cap(float radius, Color color)
         {
@@ -25,6 +26,10 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         public void OnDraw(Canvas canvas)
         {
             canvas?.DrawCircle(Position.X, Position.Y, Radius, paint);
+            if (!ShowOnlyBackground)
+            {
+                //draw bitmap
+            }
         }
     }
 }
