@@ -197,16 +197,16 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private void updateUIElements()
         {
-            startCap.Position = startTimePosition;
-            startCap.ForegroundColor = foregroundColor;
-            endCap.Position = endTimePosition;
-            endCap.ForegroundColor = foregroundColor;
-            endCap.ShowOnlyBackground = IsRunning;
+            startCap.SetPosition(startTimePosition);
+            startCap.SetForegroundColor(foregroundColor);
+            endCap.SetPosition(endTimePosition);
+            endCap.SetForegroundColor(foregroundColor);
+            endCap.SetShowOnlyBackground(IsRunning);
 
-            fullWheel.FillColor = backgroundColor;
-            fullWheel.Hidden = !isFullCircle;
+            fullWheel.SetFillColor(backgroundColor);
+            fullWheel.SetHidden(!isFullCircle);
 
-            arc.FillColor = foregroundColor;
+            arc.SetFillColor(foregroundColor);
             arc.Update(startTimeAngle, endTimeAngle);
         }
 

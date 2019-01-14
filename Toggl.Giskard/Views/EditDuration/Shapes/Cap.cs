@@ -22,14 +22,8 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
             Color = Color.ParseColor("#66000000")
         };
 
-
-        public Color ForegroundColor
-        {
-            set => arcPaint.Color = value;
-        }
-
-        public PointF Position { get; set; }
-        public bool ShowOnlyBackground { get; set; }
+        private PointF position;
+        private bool showOnlyBackground;
 
         public Cap(float radius,
             float arcWidth,
@@ -60,19 +54,34 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
             shadowCanvas.DrawCircle(radius, radius, radius - shadowWidth, shadowPaint);
         }
 
+        public void SetShowOnlyBackground(bool shouldOnlyShowBackground)
+        {
+            showOnlyBackground = shouldOnlyShowBackground;
+        }
+
+        public void SetForegroundColor(Color color)
+        {
+            arcPaint.Color = color;
+        }
+
+        public void SetPosition(PointF newPosition)
+        {
+            position = newPosition;
+        }
+
         public void OnDraw(Canvas canvas)
         {
-            if (ShowOnlyBackground)
+            if (showOnlyBackground)
             {
-                canvas?.DrawCircle(Position.X, Position.Y, arcRadius, arcPaint);
+                canvas?.DrawCircle(position.X, position.Y, arcRadius, arcPaint);
                 return;
             }
 
-            var innerSquareLeft = Position.X - capInnerSquareSide;
-            var innerSquareTop = Position.Y - capInnerSquareSide;
-            canvas?.DrawBitmap(shadowBitmap, Position.X - radius, Position.Y - radius, shadowPaint);
-            canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth - capBorderStrokeWidth / 4f, capPaint);
-            canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth, capBorderPaint);
+            var innerSquareLeft = position.X - capInnerSquareSide;
+            var innerSquareTop = position.Y - capInnerSquareSide;
+            canvas?.DrawBitmap(shadowBitmap, position.X - radius, position.Y - radius, shadowPaint);
+            canvas?.DrawCircle(position.X, position.Y, radius - shadowWidth - capBorderStrokeWidth / 4f, capPaint);
+            canvas?.DrawCircle(position.X, position.Y, radius - shadowWidth, capBorderPaint);
             canvas?.DrawBitmap(iconBitmap,
                 innerSquareLeft + (capInnerSquareSide * 2f - iconBitmap.Width) / 2f,
                 innerSquareTop + (capInnerSquareSide * 2f - iconBitmap.Height) / 2f, iconPaint);

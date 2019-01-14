@@ -13,17 +13,17 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         private float endAngle;
         private float endStroke;
 
-        public Color FillColor
-        {
-            set => paint.Color = value;
-        }
-
         public Arc(RectF bounds, float strokeWidth, Color fillColor)
         {
             this.bounds = bounds;
-            FillColor = fillColor;
+            paint.Color = fillColor;
             paint.SetStyle(Paint.Style.Stroke);
             paint.StrokeWidth = strokeWidth;
+        }
+
+        public void SetFillColor(Color color)
+        {
+            paint.Color = color;
         }
 
         public void OnDraw(Canvas canvas)

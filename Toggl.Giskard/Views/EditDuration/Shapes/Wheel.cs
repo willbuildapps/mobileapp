@@ -7,28 +7,32 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         private readonly Paint paint = new Paint(PaintFlags.AntiAlias);
         private readonly RectF bounds;
 
-        public bool Hidden { private get; set; }
-
-        public Color FillColor
-        {
-            set => paint.Color = value;
-        }
+        private bool hidden;
 
         public Wheel(RectF bounds, float strokeWidth, Color fillColor)
         {
             this.bounds = bounds;
-            FillColor = fillColor;
+            paint.Color = fillColor;
             paint.SetStyle(Paint.Style.Stroke);
             paint.StrokeWidth = strokeWidth;
-            Hidden = false;
+            hidden = false;
         }
-
 
         public void OnDraw(Canvas canvas)
         {
-            if (Hidden) return;
+            if (hidden) return;
 
             canvas?.DrawArc(bounds, 0f, 360f, false, paint);
+        }
+
+        public void SetFillColor(Color color)
+        {
+            paint.Color = color;
+        }
+
+        public void SetHidden(bool hidden)
+        {
+            this.hidden = hidden;
         }
     }
 }
