@@ -5,6 +5,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 {
     public sealed class Cap
     {
+        private const int noFlags = 0;
         private readonly Paint capPaint = new Paint(PaintFlags.AntiAlias);
         private readonly Paint capBorderPaint = new Paint(PaintFlags.AntiAlias);
         private readonly Paint iconPaint = new Paint(PaintFlags.AntiAlias);
@@ -17,7 +18,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         private readonly Bitmap iconBitmap;
         private readonly Bitmap shadowBitmap;
 
-        private readonly Paint shadowPaint = new Paint(0)
+        private readonly Paint shadowPaint = new Paint(noFlags)
         {
             Color = Color.ParseColor("#66000000")
         };
