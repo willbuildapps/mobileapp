@@ -64,7 +64,7 @@ namespace Toggl.Giskard.Views.EditDuration
         private Arc arc;
         private Cap endCap;
         private Cap startCap;
-        
+
         public IObservable<EditTimeSource> TimeEdited
             => timeEditedSubject.AsObservable();
 
@@ -160,8 +160,8 @@ namespace Toggl.Giskard.Views.EditDuration
             updateUIElements();
             fullWheel.OnDraw(canvas);
             arc.OnDraw(canvas);
-            startCap.OnDraw(canvas);
             endCap.OnDraw(canvas);
+            startCap.OnDraw(canvas);
         }
 
         private void setupDrawingDelegates()
