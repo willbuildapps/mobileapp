@@ -25,6 +25,7 @@ namespace Toggl.Giskard.Views.EditDuration
         private readonly Color capBorderColor = Color.ParseColor("#cecece");
         private readonly Color capIconColor = Color.ParseColor("#328fff");
         private float radius;
+        private float extendedRadiusMultiplier = 1.5f;
         private float arcWidth;
         private float capWidth;
         private float capBorderStrokeWidth;
@@ -43,6 +44,10 @@ namespace Toggl.Giskard.Views.EditDuration
         private double endTimeAngle => endTime.LocalDateTime.TimeOfDay.ToAngleOnTheDial().ToPositiveAngle();
 
         private double endPointsRadius;
+        private bool isDragging;
+        private WheelUpdateType updateType;
+        private double editBothAtOnceStartTimeAngleOffset;
+
         private int numberOfFullLoops => (int) ((EndTime - StartTime).TotalMinutes / MinutesInAnHour);
         private bool isFullCircle => numberOfFullLoops >= 1;
 
@@ -203,6 +208,206 @@ namespace Toggl.Giskard.Views.EditDuration
 
             arc.FillColor = foregroundColor;
             arc.Update(startTimeAngle, endTimeAngle);
+        }
+
+        #region Touch interaction
+
+        public override bool OnTouchEvent(MotionEvent motionEvent)
+        {
+            switch (motionEvent.Action)
+            {
+                case MotionEventActions.Down:
+                    touchesBegan(motionEvent.ToPointF());
+                    return true;
+                case MotionEventActions.Up:
+                    touchesEnded();
+                    return true;
+                case MotionEventActions.Move:
+                    touchesMoved(motionEvent.ToPointF());
+                    return true;
+                case MotionEventActions.Cancel:
+                    touchesCancelled();
+                    return base.OnTouchEvent(motionEvent);
+            }
+            return base.OnTouchEvent(motionEvent);
+        }
+
+        private void touchesBegan(PointF position)
+        {
+            if (isValid(position))
+            {
+                isDragging = true;
+            }
+        }
+
+        private void touchesMoved(PointF position)
+        {
+            if (isDragging == false) return;
+
+            double previousAngle;
+            switch (updateType)
+            {
+                case WheelUpdateType.EditStartTime:
+                    previousAngle = startTimeAngle;
+                    break;
+                case WheelUpdateType.EditEndTime:
+                    previousAngle = endTimeAngle;
+                    break;
+                default:
+                    previousAngle = startTimeAngle + editBothAtOnceStartTimeAngleOffset;
+                    break;
+            }
+
+            var currentAngle = AngleBetween(position.ToMultivacPoint(), center.ToMultivacPoint());
+
+            var angleChange = currentAngle - previousAngle;
+            while (angleChange < -Math.PI) angleChange += FullCircle;
+            while (angleChange > Math.PI) angleChange -= FullCircle;
+
+            var timeChange = angleChange.AngleToTime();
+
+            updateEditedTime(timeChange);
+        }
+
+        private void touchesCancelled()
+        {
+            finishTouchEditing();
+        }
+
+        private void touchesEnded()
+        {
+            finishTouchEditing();
+            switch (updateType)
+            {
+                case WheelUpdateType.EditStartTime:
+                    timeEditedSubject.OnNext(EditTimeSource.WheelStartTime);
+                    break;
+                case WheelUpdateType.EditEndTime:
+                    timeEditedSubject.OnNext(EditTimeSource.WheelEndTime);
+                    break;
+                default:
+                    timeEditedSubject.OnNext(EditTimeSource.WheelBothTimes);
+                    break;
+            }
+        }
+
+        private bool isValid(PointF position)
+        {
+            var intention = determineTapIntention(position);
+            if (intention.HasValue)
+            {
+                updateType = intention.Value;
+                if (updateType == WheelUpdateType.EditBothAtOnce)
+                {
+                    editBothAtOnceStartTimeAngleOffset =
+                        AngleBetween(position.ToMultivacPoint(), center.ToMultivacPoint()) - startTimeAngle;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private WheelUpdateType? determineTapIntention(PointF position)
+        {
+            if (touchesStartCap(position))
+            {
+                return WheelUpdateType.EditStartTime;
+            }
+
+            if (!IsRunning && touchesEndCap(position))
+            {
+                return WheelUpdateType.EditEndTime;
+            }
+
+            if (touchesStartCap(position, extendedRadius: true))
+            {
+                return WheelUpdateType.EditStartTime;
+            }
+
+            if (!IsRunning && touchesEndCap(position, extendedRadius: true))
+            {
+                return WheelUpdateType.EditEndTime;
+            }
+
+            if (!IsRunning && isOnTheWheelBetweenStartAndStop(position))
+            {
+                return WheelUpdateType.EditBothAtOnce;
+            }
+
+            return null;
+        }
+
+        private bool touchesStartCap(PointF position, bool extendedRadius = false)
+            => isCloseEnough(position, startTimePosition, calculateCapRadius(extendedRadius));
+
+        private bool touchesEndCap(PointF position, bool extendedRadius = false)
+            => isCloseEnough(position, endTimePosition, calculateCapRadius(extendedRadius));
+
+        private float calculateCapRadius(bool extendedRadius)
+            => (extendedRadius ? extendedRadiusMultiplier : 1) * (capWidth / 2);
+
+        private static bool isCloseEnough(PointF tapPosition, PointF endPoint, float radius)
+            => DistanceSq(tapPosition.ToMultivacPoint(), endPoint.ToMultivacPoint()) <= radius * radius;
+
+        private bool isOnTheWheelBetweenStartAndStop(PointF point)
+        {
+            var distanceFromCenterSq = DistanceSq(center.ToMultivacPoint(), point.ToMultivacPoint());
+
+            if (distanceFromCenterSq < capWidth * capWidth
+                || distanceFromCenterSq > radius * radius)
+            {
+                return false;
+            }
+
+            var angle = AngleBetween(point.ToMultivacPoint(), center.ToMultivacPoint());
+            return isFullCircle || angle.IsBetween(startTimeAngle, endTimeAngle);
+        }
+
+        private void updateEditedTime(TimeSpan diff)
+        {
+            var giveFeedback = false;
+            var duration = EndTime - StartTime;
+
+            if (updateType == WheelUpdateType.EditStartTime
+                || updateType == WheelUpdateType.EditBothAtOnce)
+            {
+                var nextStartTime = (StartTime + diff).RoundToClosestMinute();
+                giveFeedback = nextStartTime != StartTime;
+                StartTime = nextStartTime;
+            }
+
+            if (updateType == WheelUpdateType.EditEndTime)
+            {
+                var nextEndTime = (EndTime + diff).RoundToClosestMinute();
+                giveFeedback = nextEndTime != EndTime;
+                EndTime = nextEndTime;
+            }
+
+            if (updateType == WheelUpdateType.EditBothAtOnce)
+            {
+                EndTime = StartTime + duration;
+            }
+
+            if (giveFeedback)
+            {
+                //vibrate
+            }
+        }
+
+        private void finishTouchEditing()
+        {
+            isDragging = false;
+        }
+
+        #endregion
+
+        private enum WheelUpdateType
+        {
+            EditStartTime,
+            EditEndTime,
+            EditBothAtOnce
         }
     }
 }
