@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using Android.Content;
 using Android.Graphics;
 using Android.Runtime;
+using Android.Support.V4.Content;
 using Android.Util;
 using Android.Views;
 using MvvmCross.Plugin.Color.Platforms.Android;
@@ -13,21 +14,29 @@ using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using static Toggl.Multivac.Math;
 using FoundationColor = Toggl.Foundation.MvvmCross.Helper.Color;
+using Math = System.Math;
 
 namespace Toggl.Giskard.Views.EditDuration
 {
     [Register("toggl.giskard.views.WheelForegroundView")]
     public class WheelForegroundView : View
     {
+        private readonly Color capBackgroundColor = Color.White;
+        private readonly Color capBorderColor = Color.ParseColor("#cecece");
+        private readonly Color capIconColor = Color.ParseColor("#328fff");
         private float radius;
         private float arcWidth;
+        private float capWidth;
+        private float capBorderStrokeWidth;
+        private float capShadowWidth;
+        private int capIconSize;
         private PointF startTimePosition;
         private PointF endTimePosition;
         private PointF center;
         private RectF bounds;
 
-        private DateTimeOffset startTime = DateTimeOffset.Now - TimeSpan.FromHours(1.88f);
-        private DateTimeOffset endTime = DateTimeOffset.Now;
+        private DateTimeOffset startTime;
+        private DateTimeOffset endTime;
         private bool isRunning;
 
         private double startTimeAngle => startTime.LocalDateTime.TimeOfDay.ToAngleOnTheDial().ToPositiveAngle();
@@ -65,7 +74,7 @@ namespace Toggl.Giskard.Views.EditDuration
             {
                 if (startTime == value) return;
                 startTime = value.Clamp(MinimumStartTime, MaximumStartTime);
-                //needs layout
+                Invalidate();
             }
         }
 
@@ -76,7 +85,7 @@ namespace Toggl.Giskard.Views.EditDuration
             {
                 if (endTime == value) return;
                 endTime = value.Clamp(MinimumEndTime, MaximumEndTime);
-                RequestLayout();
+                Invalidate();
             }
         }
 
@@ -87,7 +96,7 @@ namespace Toggl.Giskard.Views.EditDuration
             {
                 if (isRunning == value) return;
                 isRunning = value;
-                RequestLayout();
+                Invalidate();
             }
         }
 
@@ -124,10 +133,14 @@ namespace Toggl.Giskard.Views.EditDuration
         {
             base.OnLayout(changed, left, top, right, bottom);
             radius = Width * 0.5f;
-            arcWidth = 28.DpToPixels(Context);
+            arcWidth = 8.DpToPixels(Context);
+            capWidth = 28.DpToPixels(Context);
+            capIconSize = 18.DpToPixels(Context);
+            capBorderStrokeWidth = 1.DpToPixels(Context);
+            capShadowWidth = 2.DpToPixels(Context);
             center = new PointF(radius, radius);
-            bounds = new RectF(arcWidth / 2.0f, arcWidth / 2.0f, Width - arcWidth / 2.0f, Width - arcWidth / 2.0f);
-            endPointsRadius = radius - arcWidth / 2.0f;
+            bounds = new RectF(capWidth, capWidth, Width - capWidth, Width - capWidth);
+            endPointsRadius = radius - capWidth;
         }
 
         protected override void OnDraw(Canvas canvas)
@@ -148,9 +161,25 @@ namespace Toggl.Giskard.Views.EditDuration
             {
                 fullWheel = new Wheel(bounds, arcWidth, backgroundColor);
                 arc = new Arc(bounds, arcWidth, Color.Transparent);
-                endCap = new Cap((float)(arcWidth / 2.0), foregroundColor);
-                startCap = new Cap((float)(arcWidth / 2.0), foregroundColor);
+                var endCapBitmap = ContextCompat.GetDrawable(Context, Resource.Drawable.ic_stop).FromVectorDrawableToBitmap(capIconSize, capIconSize);
+                var startCapBitmap = ContextCompat.GetDrawable(Context, Resource.Drawable.ic_play).FromVectorDrawableToBitmap(capIconSize, capIconSize);
+                endCap = createCapWithIcon(endCapBitmap);
+                startCap = createCapWithIcon(startCapBitmap);
             }
+        }
+
+        private Cap createCapWithIcon(Bitmap iconBitmap)
+        {
+            var capRadius = capWidth / 2f;
+            return new Cap(capRadius,
+                arcWidth,
+                capBackgroundColor,
+                capBorderColor,
+                foregroundColor,
+                capBorderStrokeWidth,
+                iconBitmap,
+                capIconColor,
+                capShadowWidth);
         }
 
         private void calculateEndPointPositions()
@@ -164,9 +193,9 @@ namespace Toggl.Giskard.Views.EditDuration
         private void updateUIElements()
         {
             startCap.Position = startTimePosition;
-            startCap.FillColor = foregroundColor;
+            startCap.ForegroundColor = foregroundColor;
             endCap.Position = endTimePosition;
-            endCap.FillColor = foregroundColor;
+            endCap.ForegroundColor = foregroundColor;
             endCap.ShowOnlyBackground = IsRunning;
 
             fullWheel.FillColor = backgroundColor;
