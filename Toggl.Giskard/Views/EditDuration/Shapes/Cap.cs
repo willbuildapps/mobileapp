@@ -1,34 +1,90 @@
+using System;
 using Android.Graphics;
 
 namespace Toggl.Giskard.Views.EditDuration.Shapes
 {
     public sealed class Cap
     {
-        private Paint paint = new Paint();
+        private readonly Paint capPaint = new Paint(PaintFlags.AntiAlias);
+        private readonly Paint capBorderPaint = new Paint(PaintFlags.AntiAlias);
+        private readonly Paint iconPaint = new Paint(PaintFlags.AntiAlias);
+        private readonly Paint arcPaint = new Paint(PaintFlags.AntiAlias);
+        private readonly float capBorderStrokeWidth;
+        private readonly float arcRadius;
+        private readonly float shadowWidth;
+        private readonly Bitmap iconBitmap;
+        private readonly Bitmap shadowBitmap;
 
-        public Color FillColor
+        private readonly Paint shadowPaint = new Paint(0)
         {
-            get => paint.Color;
-            set => paint.Color = value;
+            Color = Color.ParseColor("#66000000")
+        };
+
+        private float radius;
+        private float capInnerSquareSide;
+
+        public float Radius
+        {
+            get => radius;
+            set
+            {
+                radius = value;
+                capInnerSquareSide = (float) Math.Sqrt((radius - shadowWidth) * (radius - shadowWidth) * 2) * 0.5f;
+            }
         }
 
-        public float Radius { get; set; }
+        public Color ForegroundColor
+        {
+            set => arcPaint.Color = value;
+        }
 
         public PointF Position { get; set; }
         public bool ShowOnlyBackground { get; set; }
 
-        public Cap(float radius, Color color)
+        public Cap(float radius,
+            float arcWidth,
+            Color capColor,
+            Color capBorderColor,
+            Color foregroundColor,
+            float capBorderStrokeWidth,
+            Bitmap icon,
+            Color iconColor,
+            float shadowWidth)
         {
+            this.capBorderStrokeWidth = capBorderStrokeWidth;
+            this.shadowWidth = shadowWidth;
+            arcRadius = arcWidth / 2f;
             Radius = radius;
-            FillColor = color;
+            arcPaint.Color = foregroundColor;
+            capPaint.Color = capColor;
+            capBorderPaint.SetStyle(Paint.Style.Stroke);
+            capBorderPaint.StrokeWidth = capBorderStrokeWidth;
+            capBorderPaint.Color = capBorderColor;
+            iconBitmap = icon;
+            iconPaint.SetColorFilter(new PorterDuffColorFilter(iconColor, PorterDuff.Mode.SrcIn));
+            shadowPaint.SetMaskFilter(new BlurMaskFilter(shadowWidth, BlurMaskFilter.Blur.Normal));
+            shadowPaint.SetStyle(Paint.Style.Fill);
+            shadowBitmap = Bitmap.CreateBitmap((int) (radius * 2f), (int) (radius * 2f), Bitmap.Config.Argb8888);
+            var shadowCanvas = new Canvas(shadowBitmap);
+            shadowCanvas.DrawCircle(radius, radius, radius - shadowWidth, shadowPaint);
         }
 
         public void OnDraw(Canvas canvas)
         {
-            canvas?.DrawCircle(Position.X, Position.Y, Radius, paint);
             if (!ShowOnlyBackground)
             {
-                //draw bitmap
+                var innerSquareLeft = Position.X - capInnerSquareSide;
+                var innerSquareTop = Position.Y - capInnerSquareSide;
+                canvas?.DrawBitmap(shadowBitmap, Position.X - radius, Position.Y - radius, shadowPaint);
+                canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth - capBorderStrokeWidth / 4f, capPaint);
+                canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth, capBorderPaint);
+                canvas?.DrawBitmap(iconBitmap,
+                    innerSquareLeft + (capInnerSquareSide * 2f - iconBitmap.Width) / 2f,
+                    innerSquareTop + (capInnerSquareSide * 2f - iconBitmap.Height) / 2f, iconPaint);
+            }
+            else
+            {
+                canvas?.DrawCircle(Position.X, Position.Y, arcRadius, arcPaint);
             }
         }
     }
