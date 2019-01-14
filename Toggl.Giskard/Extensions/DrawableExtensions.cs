@@ -5,7 +5,7 @@ namespace Toggl.Giskard.Extensions
 {
     public static class DrawableExtensions
     {
-        public static Bitmap FromVectorDrawableToBitmap(this Drawable vectorDrawable, int? width = null, int? height = null)
+        public static Bitmap ToBitmap(this VectorDrawable vectorDrawable, int? width = null, int? height = null)
         {
             var bitmap = Bitmap.CreateBitmap(
                 width ?? vectorDrawable.IntrinsicWidth,

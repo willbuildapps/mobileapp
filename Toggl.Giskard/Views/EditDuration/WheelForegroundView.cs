@@ -166,8 +166,8 @@ namespace Toggl.Giskard.Views.EditDuration
             {
                 fullWheel = new Wheel(bounds, arcWidth, backgroundColor);
                 arc = new Arc(bounds, arcWidth, Color.Transparent);
-                var endCapBitmap = ContextCompat.GetDrawable(Context, Resource.Drawable.ic_stop).FromVectorDrawableToBitmap(capIconSize, capIconSize);
-                var startCapBitmap = ContextCompat.GetDrawable(Context, Resource.Drawable.ic_play).FromVectorDrawableToBitmap(capIconSize, capIconSize);
+                var endCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_stop).ToBitmap(capIconSize, capIconSize);
+                var startCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_play).ToBitmap(capIconSize, capIconSize);
                 endCap = createCapWithIcon(endCapBitmap);
                 startCap = createCapWithIcon(startCapBitmap);
             }
