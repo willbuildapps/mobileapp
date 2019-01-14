@@ -300,6 +300,7 @@
     <Compile Include="Adapters\SelectProjectRecyclerAdapter.cs" />
     <Compile Include="Bindings\TextInputLayoutErrorTextTargetBinding.cs" />
     <Compile Include="BroadcastReceivers\TimezoneChangedBroadcastReceiver.cs" />
+    <Compile Include="Extensions\ContextExtensions.cs" />
     <Compile Include="Extensions\DrawableExtensions.cs" />
     <Compile Include="Extensions\MotionEventExtensions.cs" />
     <Compile Include="Extensions\OnboardingExtensions.cs" />
