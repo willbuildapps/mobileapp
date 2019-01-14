@@ -5,7 +5,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 {
     public class Arc
     {
-        private Paint paint = new Paint();
+        private readonly Paint paint = new Paint(PaintFlags.AntiAlias);
         private readonly RectF bounds;
 
         private float startAngle;
@@ -14,22 +14,15 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 
         public Color FillColor
         {
-            get => paint.Color;
             set => paint.Color = value;
-        }
-
-        public float StrokeWidth
-        {
-            get => paint.StrokeWidth;
-            set => paint.StrokeWidth = value;
         }
 
         public Arc(RectF bounds, float strokeWidth, Color fillColor)
         {
             this.bounds = bounds;
-            StrokeWidth = strokeWidth;
             FillColor = fillColor;
             paint.SetStyle(Paint.Style.Stroke);
+            paint.StrokeWidth = strokeWidth;
         }
 
         public void OnDraw(Canvas canvas)
