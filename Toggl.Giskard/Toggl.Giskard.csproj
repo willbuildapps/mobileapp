@@ -369,6 +369,7 @@
     <Compile Include="Views\BarChartView.cs" />
     <Compile Include="Views\EditDuration\Shapes\Arc.cs" />
     <Compile Include="Views\EditDuration\Shapes\Cap.cs" />
+    <Compile Include="Views\EditDuration\Shapes\Dot.cs" />
     <Compile Include="Views\EditDuration\Shapes\Wheel.cs" />
     <Compile Include="Views\EditDuration\WheelForegroundView.cs" />
     <Compile Include="Views\ReportsCalendarView.cs" />

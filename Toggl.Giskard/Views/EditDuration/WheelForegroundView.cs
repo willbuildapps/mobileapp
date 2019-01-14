@@ -26,6 +26,8 @@ namespace Toggl.Giskard.Views.EditDuration
         private readonly Color capBorderColor = Color.ParseColor("#cecece");
         private readonly Color capIconColor = Color.ParseColor("#328fff");
         private float radius;
+        private float wheelHandleDotIndicatorRadius;
+        private float wheelHandleDotIndicatorDistanceToCenter;
         private float extendedRadiusMultiplier = 1.5f;
         private float arcWidth;
         private float capWidth;
@@ -64,6 +66,7 @@ namespace Toggl.Giskard.Views.EditDuration
         private Arc arc;
         private Cap endCap;
         private Cap startCap;
+        private Dot wheelHandleDotIndicator;
 
         public IObservable<EditTimeSource> TimeEdited
             => timeEditedSubject.AsObservable();
@@ -146,6 +149,7 @@ namespace Toggl.Giskard.Views.EditDuration
             center = new PointF(radius, radius);
             bounds = new RectF(capWidth, capWidth, Width - capWidth, Width - capWidth);
             endPointsRadius = radius - capWidth;
+            wheelHandleDotIndicatorDistanceToCenter = radius - capWidth / 2f;
         }
 
         protected override void OnDraw(Canvas canvas)
@@ -156,6 +160,7 @@ namespace Toggl.Giskard.Views.EditDuration
             updateUIElements();
             fullWheel.OnDraw(canvas);
             arc.OnDraw(canvas);
+            wheelHandleDotIndicator.OnDraw(canvas);
             endCap.OnDraw(canvas);
             startCap.OnDraw(canvas);
         }
@@ -170,6 +175,7 @@ namespace Toggl.Giskard.Views.EditDuration
                 var startCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_play).ToBitmap(capIconSize, capIconSize);
                 endCap = createCapWithIcon(endCapBitmap);
                 startCap = createCapWithIcon(startCapBitmap);
+                wheelHandleDotIndicator = new Dot(center.ToPoint(), wheelHandleDotIndicatorDistanceToCenter, wheelHandleDotIndicatorRadius, capIconColor);
             }
         }
 
@@ -208,6 +214,7 @@ namespace Toggl.Giskard.Views.EditDuration
 
             arc.SetFillColor(foregroundColor);
             arc.Update(startTimeAngle, endTimeAngle);
+            wheelHandleDotIndicator.Update(startTimeAngle, endTimeAngle);
         }
 
         #region Touch interaction
@@ -229,6 +236,7 @@ namespace Toggl.Giskard.Views.EditDuration
                     touchesCancelled();
                     return base.OnTouchEvent(motionEvent);
             }
+
             return base.OnTouchEvent(motionEvent);
         }
 
