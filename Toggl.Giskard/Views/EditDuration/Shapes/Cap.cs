@@ -71,21 +71,20 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 
         public void OnDraw(Canvas canvas)
         {
-            if (!ShowOnlyBackground)
-            {
-                var innerSquareLeft = Position.X - capInnerSquareSide;
-                var innerSquareTop = Position.Y - capInnerSquareSide;
-                canvas?.DrawBitmap(shadowBitmap, Position.X - radius, Position.Y - radius, shadowPaint);
-                canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth - capBorderStrokeWidth / 4f, capPaint);
-                canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth, capBorderPaint);
-                canvas?.DrawBitmap(iconBitmap,
-                    innerSquareLeft + (capInnerSquareSide * 2f - iconBitmap.Width) / 2f,
-                    innerSquareTop + (capInnerSquareSide * 2f - iconBitmap.Height) / 2f, iconPaint);
-            }
-            else
+            if (ShowOnlyBackground)
             {
                 canvas?.DrawCircle(Position.X, Position.Y, arcRadius, arcPaint);
+                return;
             }
+
+            var innerSquareLeft = Position.X - capInnerSquareSide;
+            var innerSquareTop = Position.Y - capInnerSquareSide;
+            canvas?.DrawBitmap(shadowBitmap, Position.X - radius, Position.Y - radius, shadowPaint);
+            canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth - capBorderStrokeWidth / 4f, capPaint);
+            canvas?.DrawCircle(Position.X, Position.Y, radius - shadowWidth, capBorderPaint);
+            canvas?.DrawBitmap(iconBitmap,
+                innerSquareLeft + (capInnerSquareSide * 2f - iconBitmap.Width) / 2f,
+                innerSquareTop + (capInnerSquareSide * 2f - iconBitmap.Height) / 2f, iconPaint);
         }
     }
 }
