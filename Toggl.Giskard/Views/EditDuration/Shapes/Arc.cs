@@ -1,5 +1,6 @@
 using Android.Graphics;
-using Toggl.Multivac;
+using static Toggl.Multivac.Math;
+using Math = Java.Lang.Math;
 
 namespace Toggl.Giskard.Views.EditDuration.Shapes
 {
@@ -27,8 +28,8 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 
         public void OnDraw(Canvas canvas)
         {
-            var startAngleInDegrees = Java.Lang.Math.ToDegrees(startAngle);
-            var endStrokeInDegrees = Java.Lang.Math.ToDegrees(endStroke);
+            var startAngleInDegrees = Math.ToDegrees(startAngle);
+            var endStrokeInDegrees = Math.ToDegrees(endStroke);
             canvas?.DrawArc(bounds, (float)startAngleInDegrees, (float)endStrokeInDegrees, false, paint);
         }
 
@@ -36,7 +37,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         {
             startAngle = (float)startTimeAngle;
             endAngle = (float)endTimeAngle;
-            var diffAngle = endAngle - startAngle + (endAngle < startAngle ? Math.FullCircle : 0);
+            var diffAngle = endAngle - startAngle + (endAngle < startAngle ? FullCircle : 0);
             endStroke = (float) diffAngle;
         }
     }
