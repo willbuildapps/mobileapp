@@ -120,32 +120,40 @@ namespace Toggl.Giskard.Views.EditDuration
 
         public WheelForegroundView(Context context) : base(context)
         {
+            init();
         }
 
         public WheelForegroundView(Context context, IAttributeSet attrs) : base(context, attrs)
         {
+            init();
         }
 
         public WheelForegroundView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
         {
+            init();
         }
 
         public WheelForegroundView(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
         {
+            init();
+        }
+
+        private void init()
+        {
+            arcWidth = 8.DpToPixels(Context);
+            capWidth = 28.DpToPixels(Context);
+            capIconSize = 18.DpToPixels(Context);
+            capShadowWidth = 2.DpToPixels(Context);
+            capBorderStrokeWidth = 1.DpToPixels(Context);
+            wheelHandleDotIndicatorRadius = 2.DpToPixels(Context);
         }
 
         #endregion
-
 
         protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
         {
             base.OnLayout(changed, left, top, right, bottom);
             radius = Width * 0.5f;
-            arcWidth = 8.DpToPixels(Context);
-            capWidth = 28.DpToPixels(Context);
-            capIconSize = 18.DpToPixels(Context);
-            capBorderStrokeWidth = 1.DpToPixels(Context);
-            capShadowWidth = 2.DpToPixels(Context);
             center = new PointF(radius, radius);
             bounds = new RectF(capWidth, capWidth, Width - capWidth, Width - capWidth);
             endPointsRadius = radius - capWidth;
@@ -167,30 +175,21 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private void setupDrawingDelegates()
         {
-            if (fullWheel == null)
-            {
-                fullWheel = new Wheel(bounds, arcWidth, backgroundColor);
-                arc = new Arc(bounds, arcWidth, Color.Transparent);
-                var endCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_stop).ToBitmap(capIconSize, capIconSize);
-                var startCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_play).ToBitmap(capIconSize, capIconSize);
-                endCap = createCapWithIcon(endCapBitmap);
-                startCap = createCapWithIcon(startCapBitmap);
-                wheelHandleDotIndicator = new Dot(center.ToPoint(), wheelHandleDotIndicatorDistanceToCenter, wheelHandleDotIndicatorRadius, capIconColor);
-            }
+            if (fullWheel != null) return;
+
+            fullWheel = new Wheel(bounds, arcWidth, backgroundColor);
+            arc = new Arc(bounds, arcWidth, Color.Transparent);
+            var endCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_stop).ToBitmap(capIconSize, capIconSize);
+            var startCapBitmap = Context.GetVectorDrawable(Resource.Drawable.ic_play).ToBitmap(capIconSize, capIconSize);
+            endCap = createCapWithIcon(endCapBitmap);
+            startCap = createCapWithIcon(startCapBitmap);
+            wheelHandleDotIndicator = new Dot(center.ToPoint(), wheelHandleDotIndicatorDistanceToCenter, wheelHandleDotIndicatorRadius, capIconColor);
         }
 
         private Cap createCapWithIcon(Bitmap iconBitmap)
         {
             var capRadius = capWidth / 2f;
-            return new Cap(capRadius,
-                arcWidth,
-                capBackgroundColor,
-                capBorderColor,
-                foregroundColor,
-                capBorderStrokeWidth,
-                iconBitmap,
-                capIconColor,
-                capShadowWidth);
+            return new Cap(capRadius, arcWidth, capBackgroundColor, capBorderColor, foregroundColor, capBorderStrokeWidth, iconBitmap, capIconColor, capShadowWidth);
         }
 
         private void calculateEndPointPositions()
@@ -302,19 +301,18 @@ namespace Toggl.Giskard.Views.EditDuration
         private bool isValid(PointF position)
         {
             var intention = determineTapIntention(position);
-            if (intention.HasValue)
-            {
-                updateType = intention.Value;
-                if (updateType == WheelUpdateType.EditBothAtOnce)
-                {
-                    editBothAtOnceStartTimeAngleOffset =
-                        AngleBetween(position.ToPoint(), center.ToPoint()) - startTimeAngle;
-                }
+            if (!intention.HasValue)
+                return false;
 
-                return true;
+            updateType = intention.Value;
+            if (updateType == WheelUpdateType.EditBothAtOnce)
+            {
+                editBothAtOnceStartTimeAngleOffset =
+                    AngleBetween(position.ToPoint(), center.ToPoint()) - startTimeAngle;
             }
 
-            return false;
+            return true;
+
         }
 
         private WheelUpdateType? determineTapIntention(PointF position)
@@ -400,8 +398,12 @@ namespace Toggl.Giskard.Views.EditDuration
 
             if (giveFeedback)
             {
-                //vibrate
+                vibrate();
             }
+        }
+
+        private void vibrate()
+        {
         }
 
         private void finishTouchEditing()
