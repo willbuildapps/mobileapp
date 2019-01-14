@@ -133,10 +133,6 @@ namespace Toggl.Giskard.Views.EditDuration
 
         #endregion
 
-        protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-        {
-            base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-        }
 
         protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
         {
