@@ -189,7 +189,7 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private void calculateEndPointPositions()
         {
-            var center = this.center.ToMultivacPoint();
+            var center = this.center.ToPoint();
 
             startTimePosition = PointOnCircumference(center, startTimeAngle, endPointsRadius).ToPointF();
             endTimePosition = PointOnCircumference(center, endTimeAngle, endPointsRadius).ToPointF();
@@ -258,7 +258,7 @@ namespace Toggl.Giskard.Views.EditDuration
                     break;
             }
 
-            var currentAngle = AngleBetween(position.ToMultivacPoint(), center.ToMultivacPoint());
+            var currentAngle = AngleBetween(position.ToPoint(), center.ToPoint());
 
             var angleChange = currentAngle - previousAngle;
             while (angleChange < -Math.PI) angleChange += FullCircle;
@@ -300,7 +300,7 @@ namespace Toggl.Giskard.Views.EditDuration
                 if (updateType == WheelUpdateType.EditBothAtOnce)
                 {
                     editBothAtOnceStartTimeAngleOffset =
-                        AngleBetween(position.ToMultivacPoint(), center.ToMultivacPoint()) - startTimeAngle;
+                        AngleBetween(position.ToPoint(), center.ToPoint()) - startTimeAngle;
                 }
 
                 return true;
@@ -349,11 +349,11 @@ namespace Toggl.Giskard.Views.EditDuration
             => (extendedRadius ? extendedRadiusMultiplier : 1) * (capWidth / 2);
 
         private static bool isCloseEnough(PointF tapPosition, PointF endPoint, float radius)
-            => DistanceSq(tapPosition.ToMultivacPoint(), endPoint.ToMultivacPoint()) <= radius * radius;
+            => DistanceSq(tapPosition.ToPoint(), endPoint.ToPoint()) <= radius * radius;
 
         private bool isOnTheWheelBetweenStartAndStop(PointF point)
         {
-            var distanceFromCenterSq = DistanceSq(center.ToMultivacPoint(), point.ToMultivacPoint());
+            var distanceFromCenterSq = DistanceSq(center.ToPoint(), point.ToPoint());
 
             if (distanceFromCenterSq < capWidth * capWidth
                 || distanceFromCenterSq > radius * radius)
@@ -361,7 +361,7 @@ namespace Toggl.Giskard.Views.EditDuration
                 return false;
             }
 
-            var angle = AngleBetween(point.ToMultivacPoint(), center.ToMultivacPoint());
+            var angle = AngleBetween(point.ToPoint(), center.ToPoint());
             return isFullCircle || angle.IsBetween(startTimeAngle, endTimeAngle);
         }
 
