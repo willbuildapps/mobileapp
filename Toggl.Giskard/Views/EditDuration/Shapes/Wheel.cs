@@ -22,7 +22,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         {
             if (hidden) return;
 
-            canvas?.DrawArc(bounds, 0f, 360f, false, paint);
+            canvas.DrawArc(bounds, 0f, 360f, false, paint);
         }
 
         public void SetFillColor(Color color)

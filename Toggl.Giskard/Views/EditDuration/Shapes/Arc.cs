@@ -30,7 +30,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         {
             var startAngleInDegrees = Math.ToDegrees(startAngle);
             var endStrokeInDegrees = Math.ToDegrees(endStroke);
-            canvas?.DrawArc(bounds, (float)startAngleInDegrees, (float)endStrokeInDegrees, false, paint);
+            canvas.DrawArc(bounds, (float)startAngleInDegrees, (float)endStrokeInDegrees, false, paint);
         }
 
         public void Update(double startTimeAngle, double endTimeAngle)

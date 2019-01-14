@@ -29,7 +29,7 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         {
             if (hidden) return;
 
-            canvas?.DrawCircle(position.X, position.Y, radius, paint);
+            canvas.DrawCircle(position.X, position.Y, radius, paint);
         }
 
         public void Update(double startTimeAngle, double endTimeAngle)
