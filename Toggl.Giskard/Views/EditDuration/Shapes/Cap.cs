@@ -9,6 +9,8 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         private readonly Paint capBorderPaint = new Paint(PaintFlags.AntiAlias);
         private readonly Paint iconPaint = new Paint(PaintFlags.AntiAlias);
         private readonly Paint arcPaint = new Paint(PaintFlags.AntiAlias);
+        private readonly float radius;
+        private readonly float capInnerSquareSide;
         private readonly float capBorderStrokeWidth;
         private readonly float arcRadius;
         private readonly float shadowWidth;
@@ -20,18 +22,6 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
             Color = Color.ParseColor("#66000000")
         };
 
-        private float radius;
-        private float capInnerSquareSide;
-
-        public float Radius
-        {
-            get => radius;
-            set
-            {
-                radius = value;
-                capInnerSquareSide = (float) Math.Sqrt((radius - shadowWidth) * (radius - shadowWidth) * 2) * 0.5f;
-            }
-        }
 
         public Color ForegroundColor
         {
@@ -53,8 +43,9 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
         {
             this.capBorderStrokeWidth = capBorderStrokeWidth;
             this.shadowWidth = shadowWidth;
+            this.radius  = radius;
+            capInnerSquareSide = (float) Math.Sqrt((radius - shadowWidth) * (radius - shadowWidth) * 2) * 0.5f;
             arcRadius = arcWidth / 2f;
-            Radius = radius;
             arcPaint.Color = foregroundColor;
             capPaint.Color = capColor;
             capBorderPaint.SetStyle(Paint.Style.Stroke);
