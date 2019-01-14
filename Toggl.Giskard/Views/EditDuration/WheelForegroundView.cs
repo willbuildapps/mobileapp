@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Android.Content;
 using Android.Graphics;
@@ -63,6 +64,9 @@ namespace Toggl.Giskard.Views.EditDuration
         private Arc arc;
         private Cap endCap;
         private Cap startCap;
+        
+        public IObservable<EditTimeSource> TimeEdited
+            => timeEditedSubject.AsObservable();
 
         public DateTimeOffset MinimumStartTime { get; set; }
 
