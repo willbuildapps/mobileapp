@@ -300,7 +300,11 @@
     <Compile Include="Adapters\SelectProjectRecyclerAdapter.cs" />
     <Compile Include="Bindings\TextInputLayoutErrorTextTargetBinding.cs" />
     <Compile Include="BroadcastReceivers\TimezoneChangedBroadcastReceiver.cs" />
+    <Compile Include="Extensions\ContextExtensions.cs" />
+    <Compile Include="Extensions\DrawableExtensions.cs" />
+    <Compile Include="Extensions\MotionEventExtensions.cs" />
     <Compile Include="Extensions\OnboardingExtensions.cs" />
+    <Compile Include="Extensions\PointExtensions.cs" />
     <Compile Include="Extensions\PopupOffsets.cs" />
     <Compile Include="Extensions\PopupWindowWithDefaultGravityExtenstions.cs" />
     <Compile Include="Extensions\Reactive\HueSaturationPickerViewExtensions.cs" />
@@ -363,6 +367,11 @@
     <Compile Include="ViewHolders\ReportsItemCellViewHolder.cs" />
     <Compile Include="ViewHolders\ReportsWorkspaceNameViewHolder.cs" />
     <Compile Include="Views\BarChartView.cs" />
+    <Compile Include="Views\EditDuration\Shapes\Arc.cs" />
+    <Compile Include="Views\EditDuration\Shapes\Cap.cs" />
+    <Compile Include="Views\EditDuration\Shapes\Dot.cs" />
+    <Compile Include="Views\EditDuration\Shapes\Wheel.cs" />
+    <Compile Include="Views\EditDuration\WheelForegroundView.cs" />
     <Compile Include="Views\ReportsCalendarView.cs" />
     <Compile Include="Views\SelectProjectRecyclerView.cs" />
     <Compile Include="Adapters\MainRecyclerAdapter.cs" />
@@ -992,6 +1001,10 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\ReportsCalendarView.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\ic_play.xml" />
+    <AndroidResource Include="Resources\drawable\ic_stop.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.0\build\netstandard2.0\NETStandard.Library.targets')" />
