@@ -188,8 +188,15 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private Cap createCapWithIcon(Bitmap iconBitmap)
         {
-            var capRadius = capWidth / 2f;
-            return new Cap(capRadius, arcWidth, capBackgroundColor, capBorderColor, foregroundColor, capBorderStrokeWidth, iconBitmap, capIconColor, capShadowWidth);
+            return new Cap(radius: capWidth / 2f,
+                arcWidth: arcWidth,
+                capColor: capBackgroundColor,
+                capBorderColor: capBorderColor,
+                foregroundColor: foregroundColor,
+                capBorderStrokeWidth: capBorderStrokeWidth,
+                icon: iconBitmap,
+                iconColor: capIconColor,
+                shadowWidth: capShadowWidth);
         }
 
         private void calculateEndPointPositions()
