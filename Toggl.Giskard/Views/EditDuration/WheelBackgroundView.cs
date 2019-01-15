@@ -13,14 +13,18 @@ namespace Toggl.Giskard.Views.EditDuration
     public class WheelBackgroundView : View
     {
         private readonly Color wheelColor = Color.ParseColor("#f3f3f3");
+        private readonly Color textColor = Color.ParseColor("#959595");
 
         private PointF center;
         private RectF bounds;
 
         private float radius;
         private float arcWidth;
-        private float margins;
+        private float capWidth;
+        private float textRadius;
+
         private Wheel wheel;
+        private ClockDial clockDial;
 
         #region Constructors
 
@@ -51,7 +55,7 @@ namespace Toggl.Giskard.Views.EditDuration
         private void init()
         {
             arcWidth = 8.DpToPixels(Context);
-            margins = 28.DpToPixels(Context);
+            capWidth = 28.DpToPixels(Context);
         }
 
         #endregion
@@ -61,7 +65,8 @@ namespace Toggl.Giskard.Views.EditDuration
             base.OnLayout(changed, left, top, right, bottom);
             radius = Width * 0.5f;
             center = new PointF(radius, radius);
-            bounds = new RectF(margins, margins, Width - margins, Width - margins);
+            bounds = new RectF(capWidth, capWidth, Width - capWidth, Width - capWidth);
+            textRadius = radius - capWidth * 2 - 2.DpToPixels(Context);
         }
 
         protected override void OnDraw(Canvas canvas)
@@ -69,14 +74,15 @@ namespace Toggl.Giskard.Views.EditDuration
             base.OnDraw(canvas);
             setupDrawingDelegates();
             wheel.OnDraw(canvas);
+            clockDial.OnDraw(canvas);
         }
 
         private void setupDrawingDelegates()
         {
-            if (wheel == null)
-            {
-                wheel = new Wheel(bounds, arcWidth, wheelColor);
-            }
+            if (wheel != null) return;
+
+            wheel = new Wheel(bounds, arcWidth, wheelColor);
+            clockDial = new ClockDial(center, 15.SpToPixels(Context), textColor, textRadius);
         }
     }
 }
