@@ -371,6 +371,7 @@
     <Compile Include="Views\EditDuration\Shapes\Cap.cs" />
     <Compile Include="Views\EditDuration\Shapes\Dot.cs" />
     <Compile Include="Views\EditDuration\Shapes\Wheel.cs" />
+    <Compile Include="Views\EditDuration\WheelBackgroundView.cs" />
     <Compile Include="Views\EditDuration\WheelForegroundView.cs" />
     <Compile Include="Views\ReportsCalendarView.cs" />
     <Compile Include="Views\SelectProjectRecyclerView.cs" />
