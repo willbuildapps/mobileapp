@@ -44,6 +44,7 @@
     {
         public const string StartTimeEntryButton = "MainStartTimeEntry";
         public const string StopTimeEntryButton = "MainStopTimeEntry";
+        public const string TimeEntriesCollection = "TimeEntriesCollection";
     }
 
     public static class StartTimeEntry

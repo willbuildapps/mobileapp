@@ -37,6 +37,7 @@ namespace Toggl.Tests.UI
 
     public static class Main
     {
+        public const string TimeEntriesCollection = "MainRecyclerView";
         public static readonly Func<AppQuery, AppQuery> StartTimeEntryButton = x => x.Id("MainPlayButton");
         public static readonly Func<AppQuery, AppQuery> StopTimeEntryButton = x => x.Id("MainStopButton");
     }

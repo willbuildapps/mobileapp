@@ -175,6 +175,13 @@ namespace Toggl.Daneel.ViewSources
             return null;
         }
 
+        public List<DateTimeOffset> AllItemsStartAndEndTime()
+        {
+            var startTimes = calendarItems.Select(item => item.StartTime).Distinct();
+            var endTimes = calendarItems.Where(item => item.EndTime.HasValue).Select(item => (DateTimeOffset)item.EndTime).Distinct();
+            return startTimes.Concat(endTimes).ToList();
+        }
+
         public void StartEditing()
         {
             IsEditing = true;

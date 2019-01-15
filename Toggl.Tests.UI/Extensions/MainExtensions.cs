@@ -28,5 +28,12 @@ namespace Toggl.Tests.UI.Extensions
 
             app.WaitForElement(Main.StopTimeEntryButton);
         }
+
+        public static void PullToRefresh(this IApp app)
+        {
+            app.WaitForNoElement(query => query.Text("Synced"));
+            app.ScrollUp(Main.TimeEntriesCollection, ScrollStrategy.Gesture);
+            app.WaitForNoElement(query => query.Text("Synced"));
+        }
     }
 }

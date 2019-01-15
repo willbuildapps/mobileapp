@@ -8,15 +8,12 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using PropertyChanged;
 using Toggl.Foundation;
 using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Diagnostics;
-using Toggl.Foundation.Extensions;
 using Toggl.Foundation.Interactors;
 using Toggl.Foundation.Models.Interfaces;
 using Toggl.Foundation.MvvmCross.Extensions;
@@ -32,6 +29,7 @@ using Toggl.Multivac.Extensions;
 using Toggl.Multivac.Models.Reports;
 using Toggl.Ultrawave.Exceptions;
 using CommonFunctions = Toggl.Multivac.Extensions.CommonFunctions;
+using Color = Toggl.Foundation.MvvmCross.Helper.Color;
 
 [assembly: MvxNavigation(typeof(ReportsViewModel), ApplicationUrls.Reports)]
 
@@ -167,7 +165,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels.Reports
 
             WorkspaceHasBillableFeatureEnabled = workspaceSubject
                 .Where(workspace => workspace != null)
-                .SelectMany(workspace => dataSource.WorkspaceFeatures.GetById(workspace.Id))
+                .SelectMany(workspace => interactorFactory.GetWorkspaceFeaturesById(workspace.Id).Execute())
                 .Select(workspaceFeatures => workspaceFeatures.IsEnabled(WorkspaceFeatureId.Pro))
                 .StartWith(false)
                 .DistinctUntilChanged()
