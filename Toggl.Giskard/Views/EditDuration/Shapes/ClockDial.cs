@@ -28,14 +28,10 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 
         public void OnDraw(Canvas canvas)
         {
-            for (var minute = 1; minute <= MinutesInAnHour; ++minute)
+            for (var minute = 5; minute <= MinutesInAnHour; minute += 5)
             {
                 var angle = (float) FullCircle * (minute / (float) MinutesInAnHour) - angleOffsetCorrection;
-                var correspondsToHourMark = minute % minuteSegmentsPerHourMark == 0;
-                if (correspondsToHourMark)
-                {
-                    drawMinuteNumber(canvas, minute, angle);
-                }
+                drawMinuteNumber(canvas, minute, angle);
             }
         }
 
