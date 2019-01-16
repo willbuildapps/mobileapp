@@ -29,14 +29,14 @@ namespace Toggl.Giskard.Views.EditDuration.Shapes
 
         public void OnDraw(Canvas canvas)
         {
-            for (var minute = 0; minute < MinutesInAnHour; minute += 5)
+            for (var minute = 0f; minute < MinutesInAnHour; minute += 5)
             {
-                var angle = (float) FullCircle * (minute / (float) MinutesInAnHour) - angleOffsetCorrection;
-                drawMinuteNumber(canvas, minute, angle);
+                var angle = FullCircle * (minute / MinutesInAnHour) - angleOffsetCorrection;
+                drawMinuteNumber(canvas, minute, (float)angle);
             }
         }
 
-        private void drawMinuteNumber(Canvas canvas, int number, float angle)
+        private void drawMinuteNumber(Canvas canvas, float number, float angle)
         {
             var minuteText = number.ToString().PadLeft(digitsCount, numberPaddingChar);
             var textCenter = PointOnCircumference(dialCenter.ToPoint(), angle, textRadius).ToPointF();
