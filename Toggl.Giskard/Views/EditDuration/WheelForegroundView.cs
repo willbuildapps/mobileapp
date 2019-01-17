@@ -16,7 +16,7 @@ using Toggl.Multivac.Extensions;
 using static Toggl.Multivac.Math;
 using FoundationColor = Toggl.Foundation.MvvmCross.Helper.Color;
 using Math = System.Math;
-
+using Color = Android.Graphics.Color;
 namespace Toggl.Giskard.Views.EditDuration
 {
     [Register("toggl.giskard.views.WheelForegroundView")]
