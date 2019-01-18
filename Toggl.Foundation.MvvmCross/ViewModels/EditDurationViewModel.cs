@@ -14,6 +14,7 @@ using Toggl.Foundation.MvvmCross.Transformations;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
+using Toggl.Multivac.Extensions.Reactive;
 using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
@@ -29,7 +30,6 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private DurationParameter defaultResult;
         private EditDurationEvent analyticsEvent;
 
-        private BehaviorSubject<DateTimeOffset> startTime = new BehaviorSubject<DateTimeOffset>(default(DateTimeOffset));
         private BehaviorSubject<DateTimeOffset> stopTime = new BehaviorSubject<DateTimeOffset>(default(DateTimeOffset));
         private BehaviorSubject<EditMode> editMode = new BehaviorSubject<EditMode>(EditMode.None);
         private BehaviorSubject<bool> isRunning = new BehaviorSubject<bool>(false);
@@ -42,12 +42,12 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public UIAction EditStartTime { get; }
         public UIAction EditStopTime { get; }
         public UIAction StopEditingTime { get; }
-        public InputAction<DateTimeOffset> ChangeStartTime { get; }
         public InputAction<DateTimeOffset> ChangeStopTime { get; }
         public InputAction<DateTimeOffset> ChangeActiveTime { get; }
         public InputAction<TimeSpan> ChangeDuration { get; }
 
-        public IObservable<DateTimeOffset> StartTime { get; }
+        public BehaviorRelay<DateTimeOffset> StartTimeRelay { get; } = new BehaviorRelay<DateTimeOffset>(default(DateTimeOffset));
+
         public IObservable<DateTimeOffset> StopTime { get; }
         public IObservable<TimeSpan> Duration { get; }
         public IObservable<bool> IsEditingTime { get; }
@@ -90,16 +90,14 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             EditStartTime = rxActionFactory.FromAction(editStartTime);
             EditStopTime = rxActionFactory.FromAction(editStopTime);
             StopEditingTime = rxActionFactory.FromAction(stopEditingTime);
-            ChangeStartTime = rxActionFactory.FromAction<DateTimeOffset>(startTime.OnNext);
             ChangeStopTime = rxActionFactory.FromAction<DateTimeOffset>(stopTime.OnNext);
             ChangeActiveTime = rxActionFactory.FromAction<DateTimeOffset>(changeActiveTime);
             ChangeDuration = rxActionFactory.FromAction<TimeSpan>(changeDuration);
 
-            var start = startTime.Where(v => v != default(DateTimeOffset));
+            var start = StartTimeRelay.Where(v => v != default(DateTimeOffset));
             var stop = stopTime.Where(v => v != default(DateTimeOffset));
             var duration = Observable.CombineLatest(start, stop, (startValue, stopValue) => stopValue - startValue);
 
-            StartTime = start.AsDriver(schedulerProvider);
             StopTime = stop.AsDriver(schedulerProvider);
             Duration = duration.AsDriver(schedulerProvider);
 
@@ -131,8 +129,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             MinimumStartTime = stopTime.Select(v => v.AddHours(-MaxTimeEntryDurationInHours)).AsDriver(schedulerProvider);
             MaximumStartTime = stopTime.AsDriver(schedulerProvider);
-            MinimumStopTime = startTime.AsDriver(schedulerProvider);
-            MaximumStopTime = startTime.Select(v => v.AddHours(MaxTimeEntryDurationInHours)).AsDriver(schedulerProvider);
+            MinimumStopTime = StartTimeRelay.AsDriver(schedulerProvider);
+            MaximumStopTime = StartTimeRelay.Select(v => v.AddHours(MaxTimeEntryDurationInHours)).AsDriver(schedulerProvider);
         }
 
         public override void Prepare(EditDurationParameters parameter)
@@ -156,7 +154,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 ? start + parameter.DurationParam.Duration.Value
                 : timeService.CurrentDateTime;
 
-            startTime.OnNext(start);
+            StartTimeRelay.Accept(start);
             stopTime.OnNext(stop);
 
             minimumDateTime.OnNext(start);
@@ -180,8 +178,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             analyticsEvent = analyticsEvent.With(result: EditDurationEvent.Result.Save);
             analyticsService.Track(analyticsEvent);
-            var duration = stopTime.Value - startTime.Value;
-            var result = DurationParameter.WithStartAndDuration(startTime.Value, isRunning.Value ? (TimeSpan?)null : duration);
+            var duration = stopTime.Value - StartTimeRelay.Value;
+            var result = DurationParameter.WithStartAndDuration(StartTimeRelay.Value, isRunning.Value ? (TimeSpan?)null : duration);
             return navigationService.Close(this, result);
         }
 
@@ -216,8 +214,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             }
             else
             {
-                minimumDateTime.OnNext(startTime.Value);
-                maximumDateTime.OnNext(startTime.Value.AddHours(MaxTimeEntryDurationInHours));
+                minimumDateTime.OnNext(StartTimeRelay.Value);
+                maximumDateTime.OnNext(StartTimeRelay.Value.AddHours(MaxTimeEntryDurationInHours));
 
                 editMode.OnNext(EditMode.EndTime);
             }
@@ -240,7 +238,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             switch (editMode.Value)
             {
                 case EditMode.StartTime:
-                    startTime.OnNext(valueInRange);
+                    StartTimeRelay.Accept(valueInRange);
                     break;
 
                 case EditMode.EndTime:
@@ -252,9 +250,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private void changeDuration(TimeSpan changedDuration)
         {
             if (isRunning.Value)
-                startTime.OnNext(timeService.CurrentDateTime - changedDuration);
+                StartTimeRelay.Accept(timeService.CurrentDateTime - changedDuration);
 
-            stopTime.OnNext(startTime.Value + changedDuration);
+            stopTime.OnNext(StartTimeRelay.Value + changedDuration);
         }
 
         private string toFormattedString(DateTimeOffset dateTimeOffset, TimeFormat timeFormat)

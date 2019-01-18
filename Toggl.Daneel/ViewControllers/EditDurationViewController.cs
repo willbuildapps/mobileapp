@@ -133,7 +133,7 @@ namespace Toggl.Daneel.ViewControllers
 
             var startTime = ViewModel.IsEditingStartTime
                     .Where(CommonFunctions.Identity)
-                    .SelectMany(_ => ViewModel.StartTime);
+                    .SelectMany(_ => ViewModel.StartTimeRelay);
 
             var stopTime = ViewModel.IsEditingStopTime
                     .Where(CommonFunctions.Identity)
@@ -145,7 +145,7 @@ namespace Toggl.Daneel.ViewControllers
 
             ViewModel.IsEditingStartTime
                 .Where(CommonFunctions.Identity)
-                .SelectMany(_ => ViewModel.StartTime)
+                .SelectMany(_ => ViewModel.StartTimeRelay)
                 .Subscribe(v => DatePicker.SetDate(v.ToNSDate(), false))
                 .DisposedBy(disposeBag);
 
@@ -203,7 +203,7 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(v => WheelView.MaximumEndTime = v)
                 .DisposedBy(disposeBag);
 
-            ViewModel.StartTime
+            ViewModel.StartTimeRelay
                 .Subscribe(v => WheelView.StartTime = v)
                 .DisposedBy(disposeBag);
 
@@ -216,7 +216,7 @@ namespace Toggl.Daneel.ViewControllers
                 .DisposedBy(disposeBag);
 
             WheelView.Rx().StartTime()
-                .Subscribe(ViewModel.ChangeStartTime.Inputs)
+                .Subscribe(ViewModel.StartTimeRelay.Accept)
                 .DisposedBy(disposeBag);
 
             WheelView.Rx().EndTime()
