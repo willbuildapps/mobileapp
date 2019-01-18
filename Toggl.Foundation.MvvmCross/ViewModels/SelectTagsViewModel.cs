@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using System.Threading.Tasks;
-using MvvmCross.Commands;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
-using PropertyChanged;
 using Toggl.Foundation.Autocomplete.Suggestions;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Diagnostics;
@@ -18,7 +15,6 @@ using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.Services;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
-using static Toggl.Foundation.Helper.Constants;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
@@ -37,7 +33,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private IStopwatch navigationFromEditTimeEntryStopwatch;
 
         public IObservable<IEnumerable<SelectableTagBaseViewModel>> Tags { get; private set; }
-        public IObservable<bool> HasTag { get; private set; }
+        public IObservable<bool> IsEmpty { get; private set; }
         public BehaviorSubject<string> FilterText { get; } = new BehaviorSubject<string>(String.Empty);
         public UIAction Close { get; }
         public UIAction Save { get; }
@@ -125,9 +121,10 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     return selectableViewModels;
                 });
 
-            HasTag = Tags
+            IsEmpty = Tags
                 .Select(tags => tags.Any())
                 .Merge(initialHasTags)
+                .Invert()
                 .DistinctUntilChanged()
                 .AsDriver(schedulerProvider);
         }

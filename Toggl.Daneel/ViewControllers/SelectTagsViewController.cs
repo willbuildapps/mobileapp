@@ -37,13 +37,11 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(replaceTags)
                 .DisposedBy(DisposeBag);
 
-            ViewModel.HasTag
-                .Invert()
+            ViewModel.IsEmpty
                 .Subscribe(EmptyStateImage.Rx().IsVisible())
                 .DisposedBy(DisposeBag);
 
-            ViewModel.HasTag
-                .Invert()
+            ViewModel.IsEmpty
                 .Subscribe(EmptyStateLabel.Rx().IsVisible())
                 .DisposedBy(DisposeBag);
 
