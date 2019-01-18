@@ -32,10 +32,12 @@ namespace Toggl.Daneel.Cells.Calendar
         public CGRect TopDragTouchArea => TopDragIndicator.Frame.Inset(-20, -20);
         public CGRect BottomDragTouchArea => BottomDragIndicator.Frame.Inset(-20, -20);
 
-        //In other words: 30 minutes or less
-        private bool shortCalendarItem => Frame.Height <= CalendarCollectionViewLayout.HourHeight / 2;
+        public CalendarCollectionViewLayout Layout;
 
-        private bool shouldCenterIconVertically => Frame.Height <= CalendarCollectionViewLayout.HourHeight / 4;
+        //In other words: 30 minutes or less
+        private bool shortCalendarItem => Frame.Height <= Layout.HourHeight / 2;
+
+        private bool shouldCenterIconVertically => Frame.Height <= Layout.HourHeight / 4;
 
         private bool isEditing;
         public bool IsEditing
@@ -268,7 +270,7 @@ namespace Toggl.Daneel.Cells.Calendar
 
         private void updateBorderLayers()
         {
-            var dashLineHeight = CalendarCollectionViewLayout.HourHeight / 4;
+            var dashLineHeight = Layout.HourHeight / 4;
             var halfLineWidth = 0.5;
 
             CATransaction.Begin();

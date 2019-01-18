@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using CoreGraphics;
 using Foundation;
@@ -19,10 +20,14 @@ namespace Toggl.Daneel.Views.Calendar
     public sealed class CalendarCollectionViewLayout : UICollectionViewLayout
     {
         private const int hoursPerDay = 24;
+        private const float maxHourHeight = 124;
+        private const float minHourHeight = 25;
 
-        public const float HourHeight = 56;
+        public BehaviorSubject<float> hourHeightSubject = new BehaviorSubject<float>(56);
+        public float HourHeight => hourHeightSubject.Value;
+        public IObservable<float> HourHeightObservable { get; }
 
-        private static readonly nfloat minItemHeight = HourHeight / 4;
+        private nfloat minItemHeight => HourHeight / 4;
         private static readonly nfloat leftPadding = 76;
         private static readonly nfloat rightPadding = 16;
         private static readonly nfloat hourSupplementaryLabelHeight = 20;
@@ -33,6 +38,7 @@ namespace Toggl.Daneel.Views.Calendar
         private DateTime date;
         private readonly ITimeService timeService;
         private readonly ICalendarCollectionViewLayoutDataSource dataSource;
+        private readonly ISchedulerProvider schedulerProvider;
 
         private readonly CompositeDisposable disposeBag = new CompositeDisposable();
 
@@ -54,16 +60,25 @@ namespace Toggl.Daneel.Views.Calendar
             }
         }
 
-        public CalendarCollectionViewLayout(ITimeService timeService, ICalendarCollectionViewLayoutDataSource dataSource)
+        public CalendarCollectionViewLayout(
+            ITimeService timeService, 
+            ICalendarCollectionViewLayoutDataSource dataSource,
+            ISchedulerProvider schedulerProvider)
             : base()
         {
             Ensure.Argument.IsNotNull(timeService, nameof(timeService));
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
+            Ensure.Argument.IsNotNull(schedulerProvider, nameof(schedulerProvider));
 
             this.timeService = timeService;
             this.dataSource = dataSource;
+            this.schedulerProvider = schedulerProvider;
 
             date = timeService.CurrentDateTime.ToLocalTime().Date;
+
+            HourHeightObservable = hourHeightSubject
+                .DistinctUntilChanged()
+                .AsDriver(schedulerProvider);
 
             timeService
                 .MidnightObservable
@@ -88,6 +103,14 @@ namespace Toggl.Daneel.Views.Calendar
                 var height = ContentViewHeight + hourSupplementaryLabelHeight;
                 return new CGSize(width, height);
             }
+        }
+
+        public void ScaleHourHeight(nfloat scale)
+        {
+            Double newHourHeight = HourHeight * scale;
+            newHourHeight = Math.Max(minHourHeight, Math.Min(maxHourHeight, newHourHeight));
+            hourHeightSubject.OnNext((float)newHourHeight);
+            InvalidateLayout();
         }
 
         public DateTimeOffset DateAtPoint(CGPoint point)

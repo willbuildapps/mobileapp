@@ -10,6 +10,7 @@ using Toggl.Daneel.ViewSources;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels.Calendar;
+using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
 using UIKit;
 
@@ -23,11 +24,13 @@ namespace Toggl.Daneel.ViewControllers
 
         private readonly UIImageView titleImage = new UIImageView(UIImage.FromBundle("togglLogo"));
         private readonly ITimeService timeService;
+        private readonly ISchedulerProvider schedulerProvider;
 
         private CalendarCollectionViewLayout layout;
         private CalendarCollectionViewSource dataSource;
         private CalendarCollectionViewEditItemHelper editItemHelper;
         private CalendarCollectionViewCreateFromSpanHelper createFromSpanHelper;
+        private CalendarCollectionViewZoomHelper zoomHelper;
 
         private readonly UIButton settingsButton = new UIButton(new CGRect(0, 0, 40, 50));
 
@@ -35,6 +38,7 @@ namespace Toggl.Daneel.ViewControllers
             : base(nameof(CalendarViewController))
         {
             timeService = Mvx.Resolve<ITimeService>();
+            schedulerProvider = Mvx.Resolve<ISchedulerProvider>();
         }
 
         public override void ViewDidLoad()
@@ -68,10 +72,11 @@ namespace Toggl.Daneel.ViewControllers
                 ViewModel.TimeOfDayFormat,
                 ViewModel.CalendarItems);
 
-            layout = new CalendarCollectionViewLayout(timeService, dataSource);
+            layout = new CalendarCollectionViewLayout(timeService, dataSource, schedulerProvider);
 
             editItemHelper = new CalendarCollectionViewEditItemHelper(CalendarCollectionView, timeService, dataSource, layout);
             createFromSpanHelper = new CalendarCollectionViewCreateFromSpanHelper(CalendarCollectionView, dataSource, layout);
+            zoomHelper = new CalendarCollectionViewZoomHelper(CalendarCollectionView, layout);
 
             CalendarCollectionView.SetCollectionViewLayout(layout, false);
             CalendarCollectionView.Delegate = dataSource;

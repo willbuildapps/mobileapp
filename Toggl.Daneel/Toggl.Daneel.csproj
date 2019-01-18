@@ -1183,6 +1183,7 @@
     <Compile Include="PlatformInfoIos.cs" />
     <Compile Include="Services\BackgroundSyncServiceIos.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
+    <Compile Include="Views\Calendar\CalendarCollectionViewZoomHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Toggl.Foundation.MvvmCross\Toggl.Foundation.MvvmCross.csproj">
