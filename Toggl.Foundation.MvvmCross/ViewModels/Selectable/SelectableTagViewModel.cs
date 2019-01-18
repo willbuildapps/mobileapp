@@ -7,13 +7,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public abstract class SelectableTagBaseViewModel : IDiffable<SelectableTagBaseViewModel>
     {
         public string Name { get; }
-        public bool Selected { get; set; }
+        public bool Selected { get; }
 
-        public SelectableTagBaseViewModel(string name, bool selected)
+        public long WorkspaceId { get; }
+
+        public SelectableTagBaseViewModel(string name, bool selected, long workspaceId)
         {
             Ensure.Argument.IsNotNullOrWhiteSpaceString(name, nameof(name));
             Name = name;
             Selected = selected;
+            WorkspaceId = workspaceId;
         }
 
         public override string ToString() => Name;
@@ -42,26 +45,24 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
     public sealed class SelectableTagViewModel : SelectableTagBaseViewModel
     {
         public long Id { get; }
-        public string Workspace { get; }
 
         public SelectableTagViewModel(
             long id,
-            string workspace,
             string name,
-            bool selected
-        ) : base(name, selected)
+            bool selected,
+            long workspaceId
+        )
+            : base(name, selected, workspaceId)
         {
             Ensure.Argument.IsNotNull(id, nameof(id));
-            Ensure.Argument.IsNotNull(workspace, nameof(workspace));
             Id = id;
-            Workspace = workspace;
         }
     }
 
     public sealed class SelectableTagCreationViewModel : SelectableTagBaseViewModel
     {
-        public SelectableTagCreationViewModel(string name)
-            : base(name, false)
+        public SelectableTagCreationViewModel(string name, long workspaceId)
+            : base(name, false, workspaceId)
         {
         }
     }

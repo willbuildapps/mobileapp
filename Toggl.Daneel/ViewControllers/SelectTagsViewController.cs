@@ -1,18 +1,24 @@
-﻿using MvvmCross.Binding.BindingContext;
-using MvvmCross.Platforms.Ios.Binding;
+﻿using System;
+using System.Collections.Generic;
+using System.Reactive.Linq;
 using Toggl.Daneel.Presentation.Attributes;
-using Toggl.Daneel.ViewSources;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
-using Toggl.Daneel.Extensions;
 using Toggl.Foundation.MvvmCross.Helper;
 using System.Threading.Tasks;
+using Toggl.Daneel.Extensions;
+using Toggl.Daneel.Extensions.Reactive;
+using Toggl.Daneel.Views.Tag;
+using Toggl.Daneel.ViewSources;
+using Toggl.Multivac.Extensions;
 
 namespace Toggl.Daneel.ViewControllers
 {
     [ModalCardPresentation]
     public sealed partial class SelectTagsViewController : KeyboardAwareViewController<SelectTagsViewModel>, IDismissableViewController
     {
+        private SelectTagsTableViewSource tableViewSource = new SelectTagsTableViewSource();
+
         public SelectTagsViewController() 
             : base(nameof(SelectTagsViewController))
         {
@@ -22,58 +28,62 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLoad();
 
-            var source = new SelectTagsTableViewSource(TagsTableView);
-            TagsTableView.Source = source;
-            TagsTableView.TableFooterView = new UIView();
+            TagsTableView.RegisterNibForCellReuse(NewTagViewCell.Nib, NewTagViewCell.Identifier);
+            TagsTableView.RegisterNibForCellReuse(CreateTagViewCell.Nib, CreateTagViewCell.Identifier);
+            TagsTableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
+            TagsTableView.Source = tableViewSource;
 
-            var bindingSet = this.CreateBindingSet<SelectTagsViewController, SelectTagsViewModel>();
+            ViewModel.Tags
+                .Subscribe(replaceTags)
+                .DisposedBy(DisposeBag);
 
-            bindingSet.Bind(EmptyStateImage)
-                      .For(v => v.BindVisible())
-                      .To(vm => vm.IsEmpty);
-                
-            bindingSet.Bind(EmptyStateLabel)
-                      .For(v => v.BindVisible())
-                      .To(vm => vm.IsEmpty);
+            ViewModel.HasTag
+                .Invert()
+                .Subscribe(EmptyStateImage.Rx().IsVisible())
+                .DisposedBy(DisposeBag);
 
-            //Table view
-            bindingSet.Bind(source).To(vm => vm.Tags);
+            ViewModel.HasTag
+                .Invert()
+                .Subscribe(EmptyStateLabel.Rx().IsVisible())
+                .DisposedBy(DisposeBag);
 
-            bindingSet.Bind(source)
-                      .For(v => v.CurrentQuery)
-                      .To(vm => vm.Text);
+            ViewModel.FilterText
+                .Subscribe(TextField.Rx().TextObserver())
+                .DisposedBy(DisposeBag);
 
-            bindingSet.Bind(source)
-                      .For(v => v.CreateTagCommand)
-                      .To(vm => vm.CreateTagCommand);
+            tableViewSource.TagSelected
+                .Subscribe(ViewModel.SelectTag.Inputs)
+                .DisposedBy(DisposeBag);
 
-            bindingSet.Bind(source)
-                      .For(v => v.SuggestCreation)
-                      .To(vm => vm.SuggestCreation);
-                           
-            //Text
-            bindingSet.Bind(TextField).To(vm => vm.Text);
+            CloseButton.Rx()
+                .BindAction(ViewModel.Close)
+                .DisposedBy(DisposeBag);
 
-            bindingSet.Bind(TextField)
-                      .For(v => v.BindPlaceholder())
-                      .To(vm => vm.PlaceholderText);
+            SaveButton.Rx()
+                .BindAction(ViewModel.Save)
+                .DisposedBy(DisposeBag);
 
-            //Commands
-            bindingSet.Bind(CloseButton).To(vm => vm.CloseCommand);
-            bindingSet.Bind(SaveButton).To(vm => vm.SaveCommand);
-            bindingSet.Bind(source)
-                      .For(v => v.SelectionChangedCommand)
-                      .To(vm => vm.SelectTagCommand);
+            TextField.Rx().Text()
+                .Subscribe(ViewModel.FilterText)
+                .DisposedBy(DisposeBag);
+        }
 
-            bindingSet.Apply();
-
+        public override void ViewWillAppear(bool animated)
+        {
+            base.ViewWillAppear(animated);
             TextField.BecomeFirstResponder();
         }
 
         public async Task<bool> Dismiss()
         {
-            await ViewModel.CloseCommand.ExecuteAsync();
+            await ViewModel.Close.Execute();
             return true;
+        }
+
+        private void replaceTags(IEnumerable<SelectableTagBaseViewModel> tags)
+        {
+            tableViewSource.SetNewTags(tags);
+            TagsTableView.ReloadData();
         }
 
         protected override void KeyboardWillShow(object sender, UIKeyboardEventArgs e)

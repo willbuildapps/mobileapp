@@ -1,65 +1,42 @@
 ﻿using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Reactive.Linq;
 using Foundation;
-using MvvmCross.Binding.Extensions;
-using MvvmCross.Commands;
-using MvvmCross.Platforms.Ios.Binding.Views;
-using Toggl.Daneel.Views;
-using Toggl.Foundation;
+using Toggl.Daneel.Cells;
+using Toggl.Daneel.Views.Tag;
+using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class SelectTagsTableViewSource : MvxTableViewSource
+    public sealed class SelectTagsTableViewSource : ListTableViewSource<SelectableTagBaseViewModel, NewTagViewCell>
     {
-        private const string tagCellIdentifier = nameof(SelectableTagViewCell);
-        private const string createCellIdentifier = nameof(MvxCreateEntityViewCell);
+        public IObservable<SelectableTagBaseViewModel> TagSelected
+            => Observable
+                .FromEventPattern<SelectableTagBaseViewModel>(e => OnItemTapped += e, e => OnItemTapped -= e)
+                .Select(e => e.EventArgs);
 
-        public string CurrentQuery { get; set; }
-
-        public bool SuggestCreation { get; set; }
-
-        public IMvxCommand CreateTagCommand { get; set; }
-
-        public SelectTagsTableViewSource(UITableView tableView) 
-            : base(tableView)
+        private const int rowHeight = 48;
+        public SelectTagsTableViewSource()
+            : base(ImmutableArray<SelectableTagBaseViewModel>.Empty, NewTagViewCell.Identifier)
         {
-            tableView.RegisterNibForCellReuse(SelectableTagViewCell.Nib, tagCellIdentifier);
-            tableView.RegisterNibForCellReuse(MvxCreateEntityViewCell.Nib, createCellIdentifier);
         }
 
-        public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => 48;
-
-        protected override UITableViewCell GetOrCreateCellFor(UITableView tableView, NSIndexPath indexPath, object item)
-            => tableView.DequeueReusableCell(item is string ? createCellIdentifier : tagCellIdentifier, indexPath);
-
-        public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
+        public void SetNewTags(IEnumerable<SelectableTagBaseViewModel> tags)
         {
-            tableView.DeselectRow(indexPath, true);
-
-            if (SuggestCreation && indexPath.Item == 0)
-            {
-                CreateTagCommand.Execute();
-                return;
-            }
-
-            base.RowSelected(tableView, indexPath);
+            items = tags.ToImmutableList();
         }
 
-        protected override object GetItemAt(NSIndexPath indexPath)
+        public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
         {
-            if (!SuggestCreation) return base.GetItemAt(indexPath);
-
-            if (indexPath.Item == 0)
-                return $"{Resources.CreateTag} \"{CurrentQuery.Trim()}\"";
-
-            return ItemsSource.ElementAt((int)indexPath.Item - 1);
+            var item = items[indexPath.Row];
+            var identifier = item is SelectableTagCreationViewModel ? CreateTagViewCell.Identifier : cellIdentifier;
+            var cell = tableView.DequeueReusableCell(identifier) as BaseTableViewCell<SelectableTagBaseViewModel>;
+            cell.Item = item;
+            return cell;
         }
 
-        public override nint RowsInSection(UITableView tableview, nint section)
-            => base.RowsInSection(tableview, section) + (SuggestCreation ? 1 : 0);
-
-        public override nint NumberOfSections(UITableView tableView)
-            => 1;
+        public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
     }
 }

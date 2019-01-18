@@ -1,31 +1,33 @@
 ﻿using System;
+
 using Foundation;
-using MvvmCross.Binding.BindingContext;
-using MvvmCross.Platforms.Ios.Binding.Views;
 using MvvmCross.Plugin.Color.Platforms.Ios;
 using Toggl.Daneel.Cells;
 using Toggl.Daneel.Extensions;
-using Toggl.Foundation.MvvmCross.Converters;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using UIKit;
 
-namespace Toggl.Daneel.Views
+namespace Toggl.Daneel.Views.Tag
 {
-    public sealed partial class SelectableTagViewCell : BaseTableViewCell<SelectableTagViewModel>
+    public partial class NewTagViewCell : BaseTableViewCell<SelectableTagBaseViewModel>
     {
-        private static readonly UIColor selectedBackgroundColor
-            = Color.Common.LightGray.ToNativeColor();
-
-        public static readonly NSString Identifier = new NSString(nameof(SelectableTagViewCell));
+        public static readonly string Identifier  = nameof(NewTagViewCell);
         public static readonly UINib Nib;
 
+        private static readonly UIColor selectedBackgroundColor
+            = Color.Common.LightGray.ToNativeColor();
         private static UIImage checkBoxCheckedImage = UIImage.FromBundle("icCheckBoxChecked");
         private static UIImage checkBoxUncheckedImage = UIImage.FromBundle("icCheckBoxUnchecked");
 
-        static SelectableTagViewCell()
+        static NewTagViewCell()
         {
-            Nib = UINib.FromName(nameof(SelectableTagViewCell), NSBundle.MainBundle);
+            Nib = UINib.FromName(nameof(NewTagViewCell), NSBundle.MainBundle);
+        }
+
+        protected NewTagViewCell(IntPtr handle) : base(handle)
+        {
+            // Note: this .ctor should not contain any initialization logic.
         }
 
         public override void SetSelected(bool selected, bool animated)
@@ -33,6 +35,12 @@ namespace Toggl.Daneel.Views
 
         public override void SetHighlighted(bool highlighted, bool animated)
             => setBackgroundColor(highlighted, animated);
+
+        protected override void UpdateView()
+        {
+            TextLabel.Text = Item.Name;
+            SelectedImageView.Image = Item.Selected ? checkBoxCheckedImage : checkBoxUncheckedImage;
+        }
 
         private void setBackgroundColor(bool selected, bool animated)
         {
@@ -52,11 +60,6 @@ namespace Toggl.Daneel.Views
                 () => BackgroundColor = color
             );
         }
-
-        protected override void UpdateView()
-        {
-            TagLabel.Text = Item.Name;
-            SelectedImage.Image = Item.Selected ? checkBoxCheckedImage : checkBoxUncheckedImage;
-        }
     }
 }
+
