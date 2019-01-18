@@ -113,16 +113,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                         && queryText.IsAllowedTagByteSize();
 
                     var selectableViewModels = tagSuggestionInWorkspace
-                        .Select(createSelectableTag);
+                        .Select(createSelectableTag)
+                        .OrderByDescending(tag => tag.Selected)
+                        .ThenBy(tag => tag.Name);
 
                     if (suggestCreation)
                     {
                         return selectableViewModels.Prepend(new SelectableTagCreationViewModel(queryText, workspaceId));
                     }
 
-                    return selectableViewModels
-                        .OrderByDescending(tag => tag.Selected)
-                        .ThenBy(tag => tag.Name);
+                    return selectableViewModels;
                 });
 
             HasTag = Tags
