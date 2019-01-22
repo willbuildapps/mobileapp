@@ -80,11 +80,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             navigationFromEditTimeEntryStopwatch = stopwatchProvider.Get(MeasuredOperation.OpenSelectTagsView);
             stopwatchProvider.Remove(MeasuredOperation.OpenSelectTagsView);
 
-            var initialHasTags = dataSource.Tags
-               .GetAll()
-               .Select(tags => tags.Where(tag => tag.WorkspaceId == workspaceId).Any());
-
-            Tags = FilterText
+            var filteredTags = FilterText
                 .Select(text => text?.Trim() ?? string.Empty)
                 .SelectMany(text =>
                 {
@@ -104,9 +100,9 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                         .Where(s => s.WorkspaceId == workspaceId);
 
                     var suggestCreation = !string.IsNullOrEmpty(queryText)
-                        && tagSuggestionInWorkspace.None(tag
-                            => tag.Name.IsSameCaseInsensitiveTrimedTextAs(queryText))
-                        && queryText.IsAllowedTagByteSize();
+                                          && tagSuggestionInWorkspace.None(tag
+                                              => tag.Name.IsSameCaseInsensitiveTrimedTextAs(queryText))
+                                          && queryText.IsAllowedTagByteSize();
 
                     var selectableViewModels = tagSuggestionInWorkspace
                         .Select(createSelectableTag)
@@ -121,11 +117,22 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     return selectableViewModels;
                 });
 
-            IsEmpty = Tags
-                .Select(tags => tags.Any())
-                .Merge(initialHasTags)
+            Tags = filteredTags
+                .AsDriver(new SelectableTagBaseViewModel[0], schedulerProvider);
+
+            var initialHasTags = dataSource.Tags
+                .GetAll()
+                .Select(tags => tags.Where(tag => tag.WorkspaceId == workspaceId).Any())
+                .Take(1);
+
+            IsEmpty =
+                Observable.CombineLatest(
+                        initialHasTags,
+                        filteredTags.Select(tags => tags.Any()),
+                        CommonFunctions.Or)
                 .Invert()
                 .DistinctUntilChanged()
+                .StartWith(true)
                 .AsDriver(schedulerProvider);
         }
 

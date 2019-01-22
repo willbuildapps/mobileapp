@@ -26,6 +26,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
             return string.Equals(Name, other.Name)
+                && WorkspaceId == other.WorkspaceId
                 && Selected == other.Selected;
         }
 
@@ -33,13 +34,13 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((SelectableTagBaseViewModel)obj);
         }
 
-        public override int GetHashCode() => HashCode.From(Name ?? string.Empty, Selected);
+        public override int GetHashCode() => HashCode.From(Name ?? string.Empty, WorkspaceId, Selected);
 
-        public long Identifier => Name.GetHashCode();
+        public long Identifier => GetHashCode();
     }
 
     public sealed class SelectableTagViewModel : SelectableTagBaseViewModel

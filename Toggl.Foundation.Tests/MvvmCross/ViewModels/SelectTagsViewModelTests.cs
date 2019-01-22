@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FsCheck.Xunit;
 using Microsoft.FSharp.Core;
 using NSubstitute;
 using Toggl.Foundation.Autocomplete;
@@ -14,6 +15,7 @@ using Toggl.Foundation.MvvmCross.Extensions;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Foundation.Tests.Extensions;
 using Toggl.Foundation.Tests.Generators;
+using Toggl.Multivac.Extensions;
 using Xunit;
 using Unit = System.Reactive.Unit;
 
@@ -280,153 +282,212 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
             }
         }
 
-//        public sealed class TheTagsProperty : SelectTagsViewModelTest
-//        {
-//            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IThreadSafeWorkspace workspace)
-//            {
-//                for (int i = 0; i < count; i++)
-//                {
-//                    /* Do not inline 'workspace.Id' into another .Return() call
-//                     * because it's a proxy that won't work later on!
-//                     * This must be cached before usage.
-//                     */
-//                    var workspaceId = workspace.Id;
-//
-//                    var tag = Substitute.For<IThreadSafeTag>();
-//                    tag.Id.Returns(i);
-//                    tag.WorkspaceId.Returns(workspaceId);
-//                    tag.Workspace.Returns(workspace);
-//                    tag.Name.Returns($"Tag{i}");
-//
-//                    yield return new TagSuggestion(tag);
-//                }
-//            }
-//
-//            private IThreadSafeWorkspace createWorkspace(long id, string name)
-//            {
-//                var workspace = Substitute.For<IThreadSafeWorkspace>();
-//                workspace.Id.Returns(id);
-//                workspace.Name.Returns(name);
-//                return workspace;
-//            }
-//
-//            [Fact, LogIfTooSlow]
-//            public async Task OnlyContainsTagsFromTheSameWorkspaceAsTimeEntry()
-//            {
-//                var tags = new List<TagSuggestion>();
-//                var workspaces = Enumerable.Range(0, 5)
-//                    .Select(i => createWorkspace(i, $"Workspace{i}")).ToArray();
-//                workspaces.ForEach(workspace
-//                    => tags.AddRange(getTagSuggestions(5, workspace)));
-//                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
-//                    .Execute()
-//                    .Returns(Observable.Return(tags));
-//                var targetWorkspace = workspaces[1];
-//                InteractorFactory.GetWorkspaceById(targetWorkspace.Id).Execute()
-//                    .Returns(Observable.Return(targetWorkspace));
-//                var tagIds = tags.Select(tag => tag.TagId).ToArray();
-//
-//                ViewModel.Prepare((tagIds, targetWorkspace.Id));
-//                await ViewModel.Initialize();
-//
-//                ViewModel.Tags.Should().HaveCount(5);
-//                ViewModel.Tags.Should()
-//                    .OnlyContain(tag => tag.Workspace == targetWorkspace.Name);
-//            }
-//
-//            [Fact, LogIfTooSlow]
-//            public async Task IsPopulatedAfterInitialization()
-//            {
-//                var workspace = createWorkspace(13, "Some workspace");
-//                var tagSuggestions = getTagSuggestions(10, workspace);
-//                var tagIds = tagSuggestions.Select(tag => tag.TagId).ToArray();
-//                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
-//                    .Execute()
-//                    .Returns(Observable.Return(tagSuggestions));
-//                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
-//                    .Returns(Observable.Return(workspace));
-//
-//                ViewModel.Prepare((tagIds, workspace.Id));
-//                await ViewModel.Initialize();
-//
-//                ViewModel.Tags.Should().HaveCount(tagSuggestions.Count());
-//            }
-//
-//            [Fact, LogIfTooSlow]
-//            public async Task IsSortedBySelectedStatusThenByName()
-//            {
-//                var workspace = createWorkspace(13, "Some workspace");
-//                var tagSuggestions = getTagSuggestions(4, workspace).ToArray();
-//
-//                var shuffledTags = new[] { tagSuggestions[3], tagSuggestions[1], tagSuggestions[2], tagSuggestions[0] };
-//                var selectedTagIds = new[] { tagSuggestions[0].TagId, tagSuggestions[2].TagId };
-//                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
-//                    .Execute()
-//                    .Returns(Observable.Return(shuffledTags));
-//                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
-//                    .Returns(Observable.Return(workspace));
-//
-//                ViewModel.Prepare((selectedTagIds, workspace.Id));
-//                await ViewModel.Initialize();
-//
-//                ViewModel.Tags.Should().HaveCount(4);
-//
-//                ViewModel.Tags[0].Name.Should().Be("Tag0");
-//                ViewModel.Tags[1].Name.Should().Be("Tag2");
-//                ViewModel.Tags[2].Name.Should().Be("Tag1");
-//                ViewModel.Tags[3].Name.Should().Be("Tag3");
-//
-//                ViewModel.Tags[0].Selected.Should().BeTrue();
-//                ViewModel.Tags[1].Selected.Should().BeTrue();
-//                ViewModel.Tags[2].Selected.Should().BeFalse();
-//                ViewModel.Tags[3].Selected.Should().BeFalse();
-//            }
-//
-//            [Fact, LogIfTooSlow]
-//            public async Task IsClearedWhenTextIsChanged()
-//            {
-//                var workspace = createWorkspace(13, "Some workspace");
-//                var oldSuggestions = getTagSuggestions(3, workspace);
-//                var newSuggestions = getTagSuggestions(1, workspace);
-//                var oldTagIds = oldSuggestions.Select(tag => tag.TagId).ToArray();
-//                var queryText = "Query text";
-//                InteractorFactory.GetTagsAutocompleteSuggestions(
-//                        Arg.Is<IList<string>>(words => words.SequenceEqual(queryText.SplitToQueryWords())))
-//                    .Execute()
-//                    .Returns(Observable.Return(newSuggestions));
-//                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
-//                    .Returns(Observable.Return(workspace));
-//                ViewModel.Prepare((oldTagIds, workspace.Id));
-//                await ViewModel.Initialize();
-//
-//                ViewModel.Text = queryText;
-//
-//                ViewModel.Tags.Should().HaveCount(1);
-//            }
-//        }
-//
-//        public sealed class TheSelectTagCommand : SelectTagsViewModelTest
-//        {
-//            private TagSuggestion tagSuggestion;
-//
-//            public TheSelectTagCommand()
-//            {
-//                var databaseTag = Substitute.For<IThreadSafeTag>();
-//                databaseTag.Name.Returns("Tag0");
-//                databaseTag.Id.Returns(0);
-//                tagSuggestion = new TagSuggestion(databaseTag);
-//            }
-//
+        public sealed class TheTagsProperty : SelectTagsViewModelTest
+        {
+            private IEnumerable<TagSuggestion> getTagSuggestions(int count, IThreadSafeWorkspace workspace)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    /* Do not inline 'workspace.Id' into another .Return() call
+                     * because it's a proxy that won't work later on!
+                     * This must be cached before usage.
+                     */
+                    var workspaceId = workspace.Id;
+
+                    var tag = Substitute.For<IThreadSafeTag>();
+                    tag.Id.Returns(i);
+                    tag.WorkspaceId.Returns(workspaceId);
+                    tag.Workspace.Returns(workspace);
+                    tag.Name.Returns($"Tag{i}");
+
+                    yield return new TagSuggestion(tag);
+                }
+            }
+
+            private IThreadSafeWorkspace createWorkspace(long id, string name)
+            {
+                var workspace = Substitute.For<IThreadSafeWorkspace>();
+                workspace.Id.Returns(id);
+                workspace.Name.Returns(name);
+                return workspace;
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task OnlyContainsTagsFromTheSameWorkspaceAsTimeEntry()
+            {
+                var tags = new List<TagSuggestion>();
+                var workspaces = Enumerable.Range(0, 5)
+                    .Select(i => createWorkspace(i, $"Workspace{i}")).ToArray();
+                workspaces.ForEach(workspace
+                    => tags.AddRange(getTagSuggestions(5, workspace)));
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                    .Returns(Observable.Return(tags));
+                var targetWorkspace = workspaces[1];
+                InteractorFactory.GetWorkspaceById(targetWorkspace.Id).Execute()
+                    .Returns(Observable.Return(targetWorkspace));
+                var tagIds = tags.Select(tag => tag.TagId).ToArray();
+
+                ViewModel.Prepare((tagIds, targetWorkspace.Id));
+                await ViewModel.Initialize();
+                var observer = TestScheduler.CreateObserver<IEnumerable<SelectableTagBaseViewModel>>();
+                ViewModel.Tags.Subscribe(observer);
+                TestScheduler.Start();
+
+                observer.LastValue().Should().HaveCount(5);
+                observer.LastValue().Should()
+                    .OnlyContain(tag => tag.WorkspaceId == targetWorkspace.Id);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsPopulatedAfterInitialization()
+            {
+                var workspace = createWorkspace(13, "Some workspace");
+                var tagSuggestions = getTagSuggestions(10, workspace);
+                var tagIds = tagSuggestions.Select(tag => tag.TagId).ToArray();
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                    .Returns(Observable.Return(tagSuggestions));
+                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
+                    .Returns(Observable.Return(workspace));
+
+                ViewModel.Prepare((tagIds, workspace.Id));
+                await ViewModel.Initialize();
+                var observer = TestScheduler.CreateObserver<IEnumerable<SelectableTagBaseViewModel>>();
+                ViewModel.Tags.Subscribe(observer);
+                TestScheduler.Start();
+
+                observer.LastValue().Should().HaveCount(tagSuggestions.Count());
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsSortedBySelectedStatusThenByName()
+            {
+                var workspace = createWorkspace(13, "Some workspace");
+                var tagSuggestions = getTagSuggestions(4, workspace).ToArray();
+
+                var shuffledTags = new[] { tagSuggestions[3], tagSuggestions[1], tagSuggestions[2], tagSuggestions[0] };
+                var selectedTagIds = new[] { tagSuggestions[0].TagId, tagSuggestions[2].TagId };
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                    .Returns(Observable.Return(shuffledTags));
+                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
+                    .Returns(Observable.Return(workspace));
+
+                ViewModel.Prepare((selectedTagIds, workspace.Id));
+                await ViewModel.Initialize();
+                var observer = TestScheduler.CreateObserver<IEnumerable<SelectableTagBaseViewModel>>();
+                ViewModel.Tags.Subscribe(observer);
+                TestScheduler.Start();
+
+                var tags = observer.LastValue().ToArray();
+                tags.Should().HaveCount(4);
+
+
+                tags[0].Name.Should().Be("Tag0");
+                tags[1].Name.Should().Be("Tag2");
+                tags[2].Name.Should().Be("Tag1");
+                tags[3].Name.Should().Be("Tag3");
+
+                tags[0].Selected.Should().BeTrue();
+                tags[1].Selected.Should().BeTrue();
+                tags[2].Selected.Should().BeFalse();
+                tags[3].Selected.Should().BeFalse();
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task IsUpdatedWhenTextIsChanged()
+            {
+                var workspace = createWorkspace(13, "Some workspace");
+                var oldSuggestions = getTagSuggestions(3, workspace);
+                var newSuggestions = getTagSuggestions(1, workspace);
+                var oldTagIds = oldSuggestions.Select(tag => tag.TagId).ToArray();
+                var queryText = "Query text";
+                InteractorFactory.GetTagsAutocompleteSuggestions(
+                        Arg.Is<IList<string>>(words => words.SequenceEqual(queryText.SplitToQueryWords())))
+                    .Execute()
+                    .Returns(Observable.Return(newSuggestions));
+                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
+                    .Returns(Observable.Return(workspace));
+                ViewModel.Prepare((oldTagIds, workspace.Id));
+                await ViewModel.Initialize();
+                var observer = TestScheduler.CreateObserver<IEnumerable<SelectableTagBaseViewModel>>();
+                ViewModel.Tags.Subscribe(observer);
+                ViewModel.FilterText.OnNext(queryText);
+                TestScheduler.Start();
+
+                var received = observer.LastValue();
+                received.Should().HaveCount(2);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task AddCreationModelWhenNoMatchingSuggestion()
+            {
+                var workspace = createWorkspace(13, "Some workspace");
+                var tagSuggestions = getTagSuggestions(10, workspace);
+                InteractorFactory.GetTagsAutocompleteSuggestions(Arg.Any<IList<string>>())
+                    .Execute()
+                    .Returns(Observable.Return(tagSuggestions));
+                InteractorFactory.GetWorkspaceById(workspace.Id).Execute()
+                    .Returns(Observable.Return(workspace));
+                var tagIds = tagSuggestions.Select(tag => tag.TagId).ToArray();
+
+                var nonExistingTag = "Non existing tag";
+                ViewModel.Prepare((tagIds, workspace.Id));
+                await ViewModel.Initialize();
+                var observer = TestScheduler.CreateObserver<IEnumerable<SelectableTagBaseViewModel>>();
+                ViewModel.Tags.Subscribe(observer);
+                ViewModel.FilterText.OnNext(nonExistingTag);
+                TestScheduler.Start();
+
+                observer.LastValue().First().Name.Should().Be(nonExistingTag);
+                observer.LastValue().First().WorkspaceId.Should().Be(workspace.Id);
+                observer.LastValue().First().Selected.Should().BeFalse();
+                observer.LastValue().First().Should().BeOfType<SelectableTagCreationViewModel>();
+            }
+        }
+
+        public sealed class TheSelectTagAction : SelectTagsViewModelTest
+        {
+            private TagSuggestion tagSuggestion;
+
+            public TheSelectTagAction()
+            {
+                var databaseTag = Substitute.For<IThreadSafeTag>();
+                databaseTag.Name.Returns("Tag0");
+                databaseTag.Id.Returns(0);
+                tagSuggestion = new TagSuggestion(databaseTag);
+            }
+
+            [Fact, LogIfTooSlow]
+            public async Task CreatesANewClientWithTheGivenNameInTheCurrentWorkspace()
+            {
+                long workspaceId = 10;
+                await ViewModel.Initialize();
+
+                var newTag = new SelectableTagCreationViewModel("Some name of the client", workspaceId);
+                ViewModel.Prepare();
+                await ViewModel.Initialize();
+
+                ViewModel.SelectTag.Execute(newTag);
+                TestScheduler.Start();
+
+                await InteractorFactory
+                    .Received()
+                    .CreateTag(Arg.Is(newTag.Name), Arg.Is(workspaceId))
+                    .Execute();
+            }
+
 //            [Property]
 //            public void SetsTheSelectedPropertyOnTheTagToTheOpposite(bool initialValue)
 //            {
-//                var selectableTag = new SelectableTagViewModel(tagSuggestion, initialValue);
+//                var selectableTag = new SelectableTagViewModel(tagSuggestion.TagId, tagSuggestion.Name, initialValue, 1);
 //
-//                ViewModel.SelectTagCommand.Execute(selectableTag);
+//                ViewModel.SelectTag.Execute(selectableTag);
 //
 //                selectableTag.Selected.Should().Be(!initialValue);
 //            }
-//
+
 //            [Fact, LogIfTooSlow]
 //            public async Task AppendsTheTagIdToSelectedTagIdsIfNotSelectedAlready()
 //            {
@@ -459,26 +520,26 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 //                        Arg.Is<long[]>(ids => EnsureExpectedTagsAreReturned(ids, new long[0]))
 //                    );
 //            }
-//        }
-//
-//        public sealed class ThePrepareMethod : SelectTagsViewModelTest
-//        {
-//            [Fact, LogIfTooSlow]
-//            public async Task AddsAllPassedTagsToTheSelectedTags()
-//            {
-//                var tagIds = new long[] { 100, 3, 10, 34, 532 };
-//
-//                ViewModel.Prepare((tagIds, 0));
-//                await ViewModel.SaveCommand.ExecuteAsync();
-//
-//                await NavigationService
-//                    .Received()
-//                    .Close(
-//                        Arg.Is(ViewModel),
-//                        Arg.Is<long[]>(ids => EnsureExpectedTagsAreReturned(ids, tagIds))
-//                    );
-//            }
-//        }
+        }
+
+        public sealed class ThePrepareMethod : SelectTagsViewModelTest
+        {
+            [Fact, LogIfTooSlow]
+            public async Task AddsAllPassedTagsToTheSelectedTags()
+            {
+                var tagIds = new long[] { 100, 3, 10, 34, 532 };
+
+                ViewModel.Prepare((tagIds, 0));
+                ViewModel.Save.Execute();
+
+                await NavigationService
+                    .Received()
+                    .Close(
+                        Arg.Is(ViewModel),
+                        Arg.Is<long[]>(ids => EnsureExpectedTagsAreReturned(ids, tagIds))
+                    );
+            }
+        }
 //
 //        public sealed class TheCreateTagMethod : SelectTagsViewModelTest
 //        {
@@ -709,6 +770,5 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 //
 //                ViewModel.IsFilterEmpty.Should().BeFalse();
 //            }
-//        }
+        }
     }
-}
