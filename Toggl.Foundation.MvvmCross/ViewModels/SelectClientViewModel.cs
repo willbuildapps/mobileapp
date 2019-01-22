@@ -63,13 +63,16 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         {
             await base.Initialize();
 
-            var allClients = await interactorFactory.GetAllClientsInWorkspace(workspaceId).Execute();
+            var allClients = await interactorFactory
+                .GetAllClientsInWorkspace(workspaceId)
+                .Execute()
+                .Select(clients => clients.OrderBy(clientName));
 
             Clients = FilterText
-                .Select(text => text ?? string.Empty)
-                .Select(text =>
+                .Select(text => (text ?? string.Empty).Trim())
+                .DistinctUntilChanged()
+                .Select(trimmedText =>
                 {
-                    var trimmedText = text.Trim();
                     var selectableViewModels = allClients
                         .Where(c => c.Name.ContainsIgnoringCase(trimmedText))
                         .Select(toSelectableViewModel);
@@ -92,6 +95,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
                     return selectableViewModels;
                 });
+
+            string clientName(IThreadSafeClient client) => client.Name;
         }
 
         private SelectableClientBaseViewModel toSelectableViewModel(IThreadSafeClient client)
