@@ -65,8 +65,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
 
             var allClients = await interactorFactory
                 .GetAllClientsInWorkspace(workspaceId)
-                .Execute()
-                .Select(clients => clients.OrderBy(clientName));
+                .Execute();
 
             Clients = FilterText
                 .Select(text => (text ?? string.Empty).Trim())
@@ -75,6 +74,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 {
                     var selectableViewModels = allClients
                         .Where(c => c.Name.ContainsIgnoringCase(trimmedText))
+                        .OrderBy(clientName)
                         .Select(toSelectableViewModel);
 
                     var isClientFilterEmpty = string.IsNullOrEmpty(trimmedText);
