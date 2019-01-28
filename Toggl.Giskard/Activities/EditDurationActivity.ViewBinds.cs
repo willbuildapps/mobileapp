@@ -1,6 +1,7 @@
 using Android.Support.Constraints;
 using Android.Views;
 using Android.Widget;
+using Toolbar = Android.Support.V7.Widget.Toolbar;
 
 namespace Toggl.Giskard.Activities
 {

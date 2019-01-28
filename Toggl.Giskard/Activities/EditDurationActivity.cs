@@ -23,6 +23,7 @@ namespace Toggl.Giskard.Activities
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public sealed partial class EditDurationActivity : ReactiveActivity<EditDurationViewModel>
     {
+        private readonly Subject<Unit> saveSubject = new Subject<Unit>();
         private EditMode editMode;
         private Dialog editDialog;
 
@@ -31,6 +32,7 @@ namespace Toggl.Giskard.Activities
             base.OnCreate(bundle);
             SetContentView(Resource.Layout.EditDurationActivity);
             InitializeViews();
+            setupToolbar();
 
             ViewModel.StartTimeString
                 .Subscribe(startTimeText.Rx().TextObserver())
@@ -150,11 +152,21 @@ namespace Toggl.Giskard.Activities
             editEndedSubject
                 .Subscribe(ViewModel.StopEditingTime.Inputs)
                 .DisposedBy(DisposeBag);
+            saveSubject
+                .Subscribe(ViewModel.Save.Inputs)
+                .DisposedBy(DisposeBag);
         }
 
         private void editTime(DateTimeOffset currentTime, Subject<DateTimeOffset> timeChangedSubject, Subject<Unit> editEndedSubject)
+        public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            if (editDialog == null)
+            MenuInflater.Inflate(Resource.Menu.GenericSaveMenu, menu);
+            return true;
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            switch (item.ItemId)
             {
                 editDialog = new TimePickerDialog(this, new TimePickerListener(currentTime, timeChangedSubject),
                     currentTime.Hour, currentTime.Minute, false);
@@ -164,6 +176,17 @@ namespace Toggl.Giskard.Activities
                     editEndedSubject.OnNext(Unit.Default);
                 };
                 editDialog.Show();
+                case Resource.Id.SaveMenuItem:
+                    saveSubject.OnNext(Unit.Default);
+                    return true;
+
+                case Android.Resource.Id.Home:
+                    navigateBack();
+                    return true;
+            }
+            return base.OnOptionsItemSelected(item);
+        }
+
         private void setupToolbar()
         {
            toolbar.Title = Foundation.Resources.StartAndStopTime;
@@ -173,6 +196,13 @@ namespace Toggl.Giskard.Activities
             SupportActionBar.SetDisplayHomeAsUpEnabled(true);
             SupportActionBar.SetDisplayShowHomeEnabled(true);
         }
+
+        public override void OnBackPressed()
+        {
+            navigateBack();
+            base.OnBackPressed();
+        }
+
         private void navigateBack()
         {
             ViewModel.Close.Execute();
