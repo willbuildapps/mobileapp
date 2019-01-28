@@ -12,25 +12,18 @@ using Toggl.Multivac;
 using System.Reactive.Subjects;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Interactors;
-using static Toggl.Foundation.MvvmCross.ViewModels.SelectTimeViewModel.TemporalInconsistency;
+using Toggl.Foundation.MvvmCross.Helper;
+using static Toggl.Foundation.MvvmCross.Helper.TemporalInconsistency;
 
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
     [Preserve(AllMembers = true)]
-    public sealed class SelectTimeViewModel
+    public sealed partial class SelectTimeViewModel
         : MvxViewModel<SelectTimeParameters, SelectTimeResultsParameters>
     {
         public const int StartTimeTab = 0;
         public const int StopTimeTab = 1;
         public const int DurationTab = 2;
-
-        public enum TemporalInconsistency
-        {
-            StartTimeAfterCurrentTime,
-            StartTimeAfterStopTime,
-            StopTimeBeforeStartTime,
-            DurationTooLong
-        }
 
         private readonly ISubject<TemporalInconsistency> temporalInconsistencySubject = new Subject<TemporalInconsistency>();
         private readonly ISubject<bool> calendarModeSubject = new BehaviorSubject<bool>(false);
