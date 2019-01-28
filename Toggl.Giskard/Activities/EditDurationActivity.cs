@@ -1,18 +1,21 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Android.App;
-using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using MvvmCross.Platforms.Android.Presenters.Attributes;
+using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Giskard.Extensions;
 using Toggl.Giskard.Extensions.Reactive;
+using Toggl.Giskard.ViewHelpers;
 using Toggl.Multivac.Extensions;
+using static Toggl.Foundation.MvvmCross.Helper.TemporalInconsistency;
 
 namespace Toggl.Giskard.Activities
 {
@@ -23,9 +26,26 @@ namespace Toggl.Giskard.Activities
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize)]
     public sealed partial class EditDurationActivity : ReactiveActivity<EditDurationViewModel>
     {
+        private readonly Dictionary<TemporalInconsistency, int> inconsistencyMessages = new Dictionary<TemporalInconsistency, int>
+        {
+            [StartTimeAfterCurrentTime] = Resource.String.StartTimeAfterCurrentTimeWarning,
+            [StartTimeAfterStopTime] = Resource.String.StartTimeAfterStopTimeWarning,
+            [StopTimeBeforeStartTime] = Resource.String.StopTimeBeforeStartTimeWarning,
+            [DurationTooLong] = Resource.String.DurationTooLong,
+        };
+
+        private readonly Subject<DateTimeOffset> activeEditionChangedSubject = new Subject<DateTimeOffset>();
+        private readonly Subject<Unit> editionEndedSubject = new Subject<Unit>();
         private readonly Subject<Unit> saveSubject = new Subject<Unit>();
+
+        private DateTimeOffset minDateTime;
+        private DateTimeOffset maxDateTime;
         private EditMode editMode;
+        private bool canDismiss = true;
+        private bool is24HoursFormat;
+
         private Dialog editDialog;
+        private Toast toast;
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -33,6 +53,10 @@ namespace Toggl.Giskard.Activities
             SetContentView(Resource.Layout.EditDurationActivity);
             InitializeViews();
             setupToolbar();
+
+            ViewModel.TimeFormat
+                .Subscribe(v => is24HoursFormat = v.IsTwentyFourHoursFormat)
+                .DisposedBy(DisposeBag);
 
             ViewModel.StartTimeString
                 .Subscribe(startTimeText.Rx().TextObserver())
@@ -61,12 +85,20 @@ namespace Toggl.Giskard.Activities
                 })
                 .DisposedBy(DisposeBag);
 
-            stopTimerLabel.Rx()
-                .BindAction(ViewModel.EditStopTime)
+            ViewModel.MinimumDateTime
+                .Subscribe(min => minDateTime = min)
+                .DisposedBy(DisposeBag);
+
+            ViewModel.MaximumDateTime
+                .Subscribe(max => maxDateTime = max)
                 .DisposedBy(DisposeBag);
 
             stopTimerLabel.Rx().Tap()
                 .Subscribe(_ => { editMode = EditMode.Time; })
+                .DisposedBy(DisposeBag);
+
+            stopTimerLabel.Rx()
+                .BindAction(ViewModel.EditStopTime)
                 .DisposedBy(DisposeBag);
 
             startTimeText.Rx().Tap()
@@ -101,7 +133,6 @@ namespace Toggl.Giskard.Activities
                 .BindAction(ViewModel.EditStopTime)
                 .DisposedBy(DisposeBag);
 
-
             stopTimeText.Rx().Tap()
                 .Subscribe()
                 .DisposedBy(DisposeBag);
@@ -110,54 +141,35 @@ namespace Toggl.Giskard.Activities
                 .Subscribe()
                 .DisposedBy(DisposeBag);
 
-            var activeTimeSubject = new Subject<DateTimeOffset>();
-            var editEndedSubject = new Subject<Unit>();
+            ViewModel.TemporalInconsistencies
+                .Subscribe(onTemporalInconsistency)
+                .DisposedBy(DisposeBag);
 
             ViewModel.IsEditingStartTime
                 .Where(CommonFunctions.Identity)
                 .SelectMany(_ => ViewModel.StartTime)
-                .Subscribe(time =>
-                {
-                    if (editMode == EditMode.Time)
-                    {
-                        editTime(time.ToLocalTime(), activeTimeSubject, editEndedSubject);
-                    }
-                    else
-                    {
-                        editDate(time.ToLocalTime(), activeTimeSubject, editEndedSubject);
-                    }
-                })
+                .Subscribe(startEditing)
                 .DisposedBy(DisposeBag);
 
             ViewModel.IsEditingStopTime
                 .Where(CommonFunctions.Identity)
                 .SelectMany(_ => ViewModel.StopTime)
-                .Subscribe(time =>
-                {
-                    if (editMode == EditMode.Time)
-                    {
-                        editTime(time.ToLocalTime(), activeTimeSubject, editEndedSubject);
-                    }
-                    else
-                    {
-                        editDate(time.ToLocalTime(), activeTimeSubject, editEndedSubject);
-                    }
-                })
+                .Subscribe(startEditing)
                 .DisposedBy(DisposeBag);
 
-            activeTimeSubject
+            activeEditionChangedSubject
                 .Subscribe(ViewModel.ChangeActiveTime.Inputs)
                 .DisposedBy(DisposeBag);
 
-            editEndedSubject
+            editionEndedSubject
                 .Subscribe(ViewModel.StopEditingTime.Inputs)
                 .DisposedBy(DisposeBag);
+
             saveSubject
                 .Subscribe(ViewModel.Save.Inputs)
                 .DisposedBy(DisposeBag);
         }
 
-        private void editTime(DateTimeOffset currentTime, Subject<DateTimeOffset> timeChangedSubject, Subject<Unit> editEndedSubject)
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
             MenuInflater.Inflate(Resource.Menu.GenericSaveMenu, menu);
@@ -168,14 +180,6 @@ namespace Toggl.Giskard.Activities
         {
             switch (item.ItemId)
             {
-                editDialog = new TimePickerDialog(this, new TimePickerListener(currentTime, timeChangedSubject),
-                    currentTime.Hour, currentTime.Minute, false);
-                editDialog.DismissEvent += (_, __) =>
-                {
-                    editDialog = null;
-                    editEndedSubject.OnNext(Unit.Default);
-                };
-                editDialog.Show();
                 case Resource.Id.SaveMenuItem:
                     saveSubject.OnNext(Unit.Default);
                     return true;
@@ -207,57 +211,94 @@ namespace Toggl.Giskard.Activities
         {
             ViewModel.Close.Execute();
         }
-            }
+
+        protected override void OnStop()
+        {
+            base.OnStop();
+            canDismiss = true;
+            editDialog?.Dismiss();
         }
 
-        private void editDate(DateTimeOffset currentDate, Subject<DateTimeOffset> dateChangedSubject, Subject<Unit> editEndedSubject)
+        private void onTemporalInconsistency(TemporalInconsistency temporalInconsistency)
+        {
+            canDismiss = false;
+            toast?.Cancel();
+            toast = null;
+
+            var messageResourceId = inconsistencyMessages[temporalInconsistency];
+            var message = Resources.GetString(messageResourceId);
+
+            toast = Toast.MakeText(this, message, ToastLength.Short);
+            toast.Show();
+        }
+
+        private void startEditing(DateTimeOffset initialValue)
+        {
+            if (editMode == EditMode.Time)
+            {
+                editTime(initialValue.ToLocalTime());
+                return;
+            }
+            editDate(initialValue.ToLocalTime());
+        }
+
+        private void editTime(DateTimeOffset currentTime)
         {
             if (editDialog == null)
             {
-                editDialog = new DatePickerDialog(this, new DatePickerListener(currentDate, dateChangedSubject),
-                    currentDate.Year, currentDate.Month, currentDate.Day);
-                editDialog.DismissEvent += (_, __) =>
+                var timePickerDialog = new TimePickerDialog(this, Resource.Style.WheelDialogStyle,  new TimePickerListener(currentTime, activeEditionChangedSubject.OnNext),
+                    currentTime.Hour, currentTime.Minute, is24HoursFormat);
+
+                void resetAction()
                 {
-                    editDialog = null;
-                    editEndedSubject.OnNext(Unit.Default);
-                };
+                    timePickerDialog.UpdateTime(currentTime.Hour, currentTime.Minute);
+                }
+
+                editDialog = timePickerDialog;
+                editDialog.DismissEvent += (_, __) => onCurrentEditDialogDismiss(resetAction);
                 editDialog.Show();
             }
         }
 
-        private sealed class TimePickerListener : Java.Lang.Object, TimePickerDialog.IOnTimeSetListener
+        private void editDate(DateTimeOffset currentDate)
         {
-            private readonly DateTimeOffset currentTime;
-            private readonly Subject<DateTimeOffset> editTimeSubject;
-
-            public TimePickerListener(DateTimeOffset currentTime, Subject<DateTimeOffset> editTimeSubject)
+            if (editDialog == null)
             {
-                this.currentTime = currentTime;
-                this.editTimeSubject = editTimeSubject;
-            }
+                var datePickerDialog = new DatePickerDialog(this, Resource.Style.WheelDialogStyle, new DatePickerListener(currentDate, activeEditionChangedSubject.OnNext),
+                    currentDate.Year, currentDate.Month, currentDate.Day);
 
-            public void OnTimeSet(TimePicker view, int hourOfDay, int minute)
-            {
-                var pickedTime = new DateTimeOffset(currentTime.Year, currentTime.Month, currentTime.Day, hourOfDay, minute, currentTime.Minute, currentTime.Millisecond, currentTime.Offset);
-                editTimeSubject.OnNext(pickedTime);
+                void updateDateBounds()
+                {
+                    datePickerDialog.DatePicker.MinDate = minDateTime.ToUnixTimeMilliseconds();
+                    datePickerDialog.DatePicker.MaxDate = maxDateTime.ToUnixTimeMilliseconds();
+                }
+
+                updateDateBounds();
+
+                void resetAction()
+                {
+                    updateDateBounds();
+                    datePickerDialog.UpdateDate(currentDate.Year, currentDate.Month, currentDate.Day);
+                }
+
+                editDialog = datePickerDialog;
+                editDialog.DismissEvent += (_, __) => onCurrentEditDialogDismiss(resetAction);
+                editDialog.Show();
             }
         }
 
-        private sealed class DatePickerListener : Java.Lang.Object, DatePickerDialog.IOnDateSetListener
+        private void onCurrentEditDialogDismiss(Action resetAction)
         {
-            private readonly DateTimeOffset currentDate;
-            private readonly Subject<DateTimeOffset> editDateSubject;
-
-            public DatePickerListener(DateTimeOffset currentDate, Subject<DateTimeOffset> editDateSubject)
+            if (canDismiss)
             {
-                this.currentDate = currentDate;
-                this.editDateSubject = editDateSubject;
+                editDialog = null;
+                editionEndedSubject.OnNext(Unit.Default);
             }
-
-            public void OnDateSet(DatePicker view, int year, int month, int dayOfMonth)
+            else
             {
-                var pickedDate = new DateTimeOffset(year, month, dayOfMonth, currentDate.Hour, currentDate.Minute, currentDate.Minute, currentDate.Millisecond, currentDate.Offset);
-                editDateSubject.OnNext(pickedDate);
+                resetAction();
+                editDialog.Show();
+                canDismiss = true;
             }
         }
 
