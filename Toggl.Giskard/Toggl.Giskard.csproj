@@ -345,10 +345,12 @@
     <Compile Include="ViewHelpers\BarChartData.cs" />
     <Compile Include="ViewHelpers\BarChartDayLabel.cs" />
     <Compile Include="ViewHelpers\CopyLessSpannableFactory.cs" />
+    <Compile Include="ViewHelpers\DatePickerListener.cs" />
     <Compile Include="ViewHelpers\MainRecyclerViewTouchCallback.cs" />
     <Compile Include="ViewHelpers\ReportsSummaryData.cs" />
     <Compile Include="ViewHelpers\SimpleRecyclerViewScrollChangeListener.cs" />
     <Compile Include="ViewHelpers\SuggestionsRecyclerViewSnapHelper.cs" />
+    <Compile Include="ViewHelpers\TimePickerListener.cs" />
     <Compile Include="ViewHolders\CalendarDayCellViewHolder.cs" />
     <Compile Include="ViewHolders\Client\ClientCreationSelectionViewHolder.cs" />
     <Compile Include="ViewHolders\Client\ClientSelectionViewHolder.cs" />
