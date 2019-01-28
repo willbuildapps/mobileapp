@@ -18,6 +18,7 @@ namespace Toggl.Giskard.Activities
         private View stopDotSeparator;
         private TextView stopDateText;
         private View wheel;
+        private Toolbar toolbar;
 
         protected override void InitializeViews()
         {
@@ -33,6 +34,7 @@ namespace Toggl.Giskard.Activities
             stopDotSeparator = FindViewById<View>(Resource.Id.StopDotSeparator);
             stopDateText = FindViewById<TextView>(Resource.Id.StopDateText);
             wheel = FindViewById<View>(Resource.Id.Wheel);
+            toolbar = FindViewById<Toolbar>(Resource.Id.Toolbar);
         }
     }
 }

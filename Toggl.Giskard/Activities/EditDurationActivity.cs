@@ -164,6 +164,19 @@ namespace Toggl.Giskard.Activities
                     editEndedSubject.OnNext(Unit.Default);
                 };
                 editDialog.Show();
+        private void setupToolbar()
+        {
+           toolbar.Title = Foundation.Resources.StartAndStopTime;
+
+            SetSupportActionBar(toolbar);
+
+            SupportActionBar.SetDisplayHomeAsUpEnabled(true);
+            SupportActionBar.SetDisplayShowHomeEnabled(true);
+        }
+        private void navigateBack()
+        {
+            ViewModel.Close.Execute();
+        }
             }
         }
 
