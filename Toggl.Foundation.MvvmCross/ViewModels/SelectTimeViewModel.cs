@@ -18,7 +18,7 @@ using static Toggl.Foundation.MvvmCross.Helper.TemporalInconsistency;
 namespace Toggl.Foundation.MvvmCross.ViewModels
 {
     [Preserve(AllMembers = true)]
-    public sealed partial class SelectTimeViewModel
+    public sealed class SelectTimeViewModel
         : MvxViewModel<SelectTimeParameters, SelectTimeResultsParameters>
     {
         public const int StartTimeTab = 0;
