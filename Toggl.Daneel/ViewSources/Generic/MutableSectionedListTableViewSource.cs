@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Foundation;
 using Toggl.Daneel.Cells;
@@ -14,12 +13,11 @@ namespace Toggl.Daneel.ViewSources
     public abstract class MutableSectionedListTableViewSource<TModel, TCell> : UITableViewSource
         where TCell : BaseTableViewCell<TModel>
     {
-        private readonly ISubject<TModel> itemSelectedSubject = new Subject<TModel>();
         private readonly string cellIdentifier;
 
         private readonly IReadOnlyList<IReadOnlyList<TModel>> items;
 
-        public IObservable<TModel> ItemSelected { get; }
+        public ISubject<TModel> ItemSelected { get; } = new Subject<TModel>();
 
         protected IReadOnlyList<IReadOnlyList<TModel>> DisplayedItems
             => displayedItems.Select(section => section.AsReadOnly()).ToList().AsReadOnly();
@@ -30,8 +28,6 @@ namespace Toggl.Daneel.ViewSources
         {
             this.items = items;
             this.cellIdentifier = cellIdentifier;
-
-            ItemSelected = itemSelectedSubject.AsObservable();
 
             reloadDisplayedData();
         }
@@ -52,7 +48,7 @@ namespace Toggl.Daneel.ViewSources
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
         {
             var item = displayedItems[indexPath.Section][indexPath.Row];
-            itemSelectedSubject.OnNext(item);
+            ItemSelected.OnNext(item);
         }
 
         public void ChangeDisplayedCollection(ICollectionChange change)

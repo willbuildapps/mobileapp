@@ -81,7 +81,7 @@ namespace Toggl.Daneel.ViewSources
             {
                 if (indexPath.Section == 0)
                 {
-                    OnItemTapped?.Invoke(createEntitySuggestion);
+                    ItemSelected.OnNext(createEntitySuggestion);
                     tableView.DeselectRow(indexPath, true);
                     return;
                 }
