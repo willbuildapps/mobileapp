@@ -41,6 +41,10 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLoad();
 
+            TitleLabel.Text = Resources.Welcome;
+            DescriptionLabel.Text = Resources.CalendarFeatureDescription;
+            GetStartedButton.SetTitle(Resources.GetStarted, UIControlState.Normal);
+
             settingsButton.SetImage(UIImage.FromBundle("icSettings"), UIControlState.Normal);
 
             ViewModel
@@ -84,6 +88,10 @@ namespace Toggl.Daneel.ViewControllers
 
             editItemHelper.EditCalendarItem
                 .Subscribe(ViewModel.OnUpdateTimeEntry.Inputs)
+                .DisposedBy(DisposeBag);
+
+            editItemHelper.LongPressCalendarEvent
+                .Subscribe(ViewModel.OnCalendarEventLongPressed.Inputs)
                 .DisposedBy(DisposeBag);
 
             ViewModel.SettingsAreVisible

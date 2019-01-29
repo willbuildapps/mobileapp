@@ -1,6 +1,7 @@
 ﻿using Toggl.Foundation.Analytics;
 using Toggl.Foundation.DataSources;
 using Toggl.Foundation.Diagnostics;
+using Toggl.Foundation.Login;
 using Toggl.Foundation.Services;
 using Toggl.Foundation.Shortcuts;
 using Toggl.Foundation.Sync;
@@ -30,6 +31,9 @@ namespace Toggl.Foundation.Interactors
         private readonly ICalendarService calendarService;
         private readonly ISyncManager syncManager;
         private readonly IStopwatchProvider stopwatchProvider;
+        private readonly ITogglDatabase database;
+        private readonly IPrivateSharedStorageService privateSharedStorageService;
+        private readonly IUserAccessManager userAccessManager;
 
         public InteractorFactory(
             IIdProvider idProvider,
@@ -46,7 +50,10 @@ namespace Toggl.Foundation.Interactors
             UserAgent userAgent,
             ICalendarService calendarService,
             ISyncManager syncManager,
-            IStopwatchProvider stopwatchProvider)
+            IStopwatchProvider stopwatchProvider,
+            ITogglDatabase database,
+            IPrivateSharedStorageService privateSharedStorageService,
+            IUserAccessManager userAccessManager)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(api, nameof(api));
@@ -63,6 +70,9 @@ namespace Toggl.Foundation.Interactors
             Ensure.Argument.IsNotNull(calendarService, nameof(calendarService));
             Ensure.Argument.IsNotNull(syncManager, nameof(syncManager));
             Ensure.Argument.IsNotNull(stopwatchProvider, nameof(stopwatchProvider));
+            Ensure.Argument.IsNotNull(database, nameof(database));
+            Ensure.Argument.IsNotNull(privateSharedStorageService, nameof(privateSharedStorageService));
+            Ensure.Argument.IsNotNull(userAccessManager, nameof(userAccessManager));
 
             this.dataSource = dataSource;
             this.api = api;
@@ -79,6 +89,9 @@ namespace Toggl.Foundation.Interactors
             this.calendarService = calendarService;
             this.syncManager = syncManager;
             this.stopwatchProvider = stopwatchProvider;
+            this.database = database;
+            this.privateSharedStorageService = privateSharedStorageService;
+            this.userAccessManager = userAccessManager;
         }
     }
 }

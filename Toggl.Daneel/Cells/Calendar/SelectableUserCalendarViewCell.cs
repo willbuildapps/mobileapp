@@ -32,15 +32,15 @@ namespace Toggl.Daneel.Cells.Calendar
             FadeView.FadeRight = true;
         }
 
-        protected override void UpdateView()
+        public void ToggleSwitch()
         {
-            UpdateView(false);
+            IsSelectedSwitch.SetState(!IsSelectedSwitch.On, animated: true);
         }
 
-        public void UpdateView(bool animate)
+        protected override void UpdateView()
         {
             CalendarNameLabel.Text = Item.Name;
-            IsSelectedSwitch.SetState(Item.Selected, animate);
+            IsSelectedSwitch.SetState(Item.InitiallySelected, animated: true);
         }
     }
 }

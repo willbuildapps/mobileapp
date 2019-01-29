@@ -379,6 +379,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.SegmentsObservable.Subscribe(segmentsObservable);
                 ViewModel.GroupedSegmentsObservable.Subscribe(groupedSegmentsObservable);
 
+                TestScheduler.Start();
+                
                 await Initialize();
 
                 var actualSegments = segmentsObservable.Values().Last();
@@ -415,6 +417,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var groupedSegmentsObservable = TestScheduler.CreateObserver<IReadOnlyList<ChartSegment>>();
                 ViewModel.SegmentsObservable.Subscribe(segmentsObservable);
                 ViewModel.GroupedSegmentsObservable.Subscribe(groupedSegmentsObservable);
+
+                TestScheduler.Start();
 
                 await Initialize();
 
@@ -454,6 +458,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 ViewModel.SegmentsObservable.Subscribe(segmentsObservable);
                 ViewModel.GroupedSegmentsObservable.Subscribe(groupedSegmentsObservable);
 
+                TestScheduler.Start();
+
                 await Initialize();
 
                 var actualSegments = segmentsObservable.Values().Last();
@@ -490,6 +496,8 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
                 var groupedSegmentsObservable = TestScheduler.CreateObserver<IReadOnlyList<ChartSegment>>();
                 ViewModel.SegmentsObservable.Subscribe(segmentsObservable);
                 ViewModel.GroupedSegmentsObservable.Subscribe(groupedSegmentsObservable);
+
+                TestScheduler.Start();
 
                 await Initialize();
 
@@ -670,7 +678,9 @@ namespace Toggl.Foundation.Tests.MvvmCross.ViewModels
 
                 var workspaceFeaturesObservable = Observable.Return(workspaceFeatures);
                 var workspaceObservable = Observable.Return(workspace);
-                DataSource.WorkspaceFeatures.GetById(workspace.Id).Returns(workspaceFeaturesObservable);
+                InteractorFactory.GetWorkspaceFeaturesById(workspace.Id)
+                    .Execute()
+                    .Returns(workspaceFeaturesObservable);
                 DialogService.Select(Arg.Any<string>(), Arg.Any<ICollection<(string, IThreadSafeWorkspace)>>(), Arg.Any<int>()).Returns(workspaceObservable);
             }
         }

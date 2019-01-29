@@ -4,6 +4,7 @@ using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Extensions.Reactive;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
+using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Multivac.Extensions;
 
@@ -29,7 +30,10 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLoad();
 
+            TitleLabel.Text = Resources.DurationFormat;
+
             var source = new DurationFormatsTableViewSource(DurationFormatsTableView, ViewModel.DurationFormats);
+            
             DurationFormatsTableView.Source = source;
 
             BackButton.Rx()

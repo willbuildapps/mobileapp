@@ -27,6 +27,8 @@ namespace Toggl.Foundation.Interactors
 
         IInteractor<IObservable<IThreadSafeTimeEntry>> UpdateTimeEntry(EditTimeEntryDto dto);
 
+        IInteractor<IObservable<IThreadSafeTimeEntry>> GetTimeEntryById(long id);
+
         IInteractor<IObservable<Unit>> DeleteTimeEntry(long id);
 
         IInteractor<IObservable<IEnumerable<IThreadSafeTimeEntry>>> GetAllTimeEntriesVisibleToTheUser();
@@ -34,6 +36,8 @@ namespace Toggl.Foundation.Interactors
         IInteractor<IObservable<IThreadSafeTimeEntry>> StopTimeEntry(DateTimeOffset currentDateTime, TimeEntryStopOrigin origin);
 
         IInteractor<IObservable<Unit>> ObserveTimeEntriesChanges();
+
+        IInteractor<IObservable<TimeSpan>> ObserveTimeTrackedToday();
 
         #endregion
 
@@ -44,6 +48,8 @@ namespace Toggl.Foundation.Interactors
         IInteractor<IObservable<bool>> IsBillableAvailableForProject(long projectId);
 
         IInteractor<IObservable<IThreadSafeProject>> CreateProject(CreateProjectDTO dto);
+
+        IInteractor<IObservable<IThreadSafeProject>> GetProjectById(long id);
 
         #endregion
 
@@ -70,6 +76,12 @@ namespace Toggl.Foundation.Interactors
         IInteractor<IObservable<IEnumerable<IThreadSafeWorkspace>>> ObserveAllWorkspaces();
 
         IInteractor<IObservable<Unit>> ObserveWorkspacesChanges();
+
+        #endregion
+
+        #region WorkspaceFeatureCollection
+
+        IInteractor<IObservable<IThreadSafeWorkspaceFeatureCollection>> GetWorkspaceFeaturesById(long id);
 
         #endregion
 
@@ -114,6 +126,12 @@ namespace Toggl.Foundation.Interactors
 
         #endregion
 
+        #region UserAccess
+
+        IInteractor<IObservable<Unit>> Logout(LogoutSource source);
+
+        #endregion
+
         #region Settings
 
         IInteractor<IObservable<Unit>> SendFeedback(string message);
@@ -146,11 +164,21 @@ namespace Toggl.Foundation.Interactors
 
         IInteractor<IObservable<IEnumerable<IThreadSafeClient>>> GetAllClientsInWorkspace(long workspaceId);
 
+        IInteractor<IObservable<IThreadSafeClient>> GetClientById(long id);
+
         #endregion
 
         #region Tags
 
         IInteractor<IObservable<IThreadSafeTag>> CreateTag(string tagName, long workspaceId);
+
+        IInteractor<IObservable<IThreadSafeTag>> GetTagById(long id);
+
+        #endregion
+
+        #region Tasks
+
+        IInteractor<IObservable<IThreadSafeTask>> GetTaskById(long id);
 
         #endregion
 

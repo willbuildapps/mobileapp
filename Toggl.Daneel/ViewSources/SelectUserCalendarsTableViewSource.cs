@@ -1,15 +1,17 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using Foundation;
 using Toggl.Daneel.Cells.Calendar;
 using Toggl.Foundation.MvvmCross.Collections;
 using Toggl.Foundation.MvvmCross.ViewModels.Selectable;
+using Toggl.Multivac;
 using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
     public sealed class SelectUserCalendarsTableViewSource
-        : ReactiveSectionedListTableViewSource<SelectableUserCalendarViewModel, SelectableUserCalendarViewCell>
+        : SectionedListTableViewSource<SelectableUserCalendarViewModel, SelectableUserCalendarViewCell>
     {
         private const int rowHeight = 48;
         private const int headerHeight = 48;
@@ -21,9 +23,9 @@ namespace Toggl.Daneel.ViewSources
 
         public SelectUserCalendarsTableViewSource(
             UITableView tableView,
-            ObservableGroupedOrderedCollection<SelectableUserCalendarViewModel> items
+            ISchedulerProvider schedulerProvider
         )
-            : base(items, cellIdentifier)
+            : base(ImmutableList<IImmutableList<SelectableUserCalendarViewModel>>.Empty, schedulerProvider, cellIdentifier)
         {
             tableView.RegisterNibForCellReuse(SelectableUserCalendarViewCell.Nib, cellIdentifier);
             tableView.RegisterNibForHeaderFooterViewReuse(UserCalendarListHeaderViewCell.Nib, headerIdentifier);
@@ -38,7 +40,7 @@ namespace Toggl.Daneel.ViewSources
         public override UIView GetViewForHeader(UITableView tableView, nint section)
         {
             var header = (UserCalendarListHeaderViewCell)tableView.DequeueReusableHeaderFooterView(headerIdentifier);
-            header.Item = DisplayedItems[(int)section].First().SourceName;
+            header.Item = Items[(int)section].First().SourceName;
             header.ContentView.BackgroundColor = SectionHeaderBackgroundColor;
             return header;
         }
@@ -48,13 +50,9 @@ namespace Toggl.Daneel.ViewSources
             base.RowSelected(tableView, indexPath);
 
             var cell = (SelectableUserCalendarViewCell)tableView.CellAt(indexPath);
-            cell.UpdateView(true);
+            cell.ToggleSwitch();
 
             tableView.DeselectRow(indexPath, true);
-        }
-
-        public override void RefreshHeader(UITableView tableView, int section)
-        {
         }
     }
 }
