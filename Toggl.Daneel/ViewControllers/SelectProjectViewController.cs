@@ -2,6 +2,7 @@
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
+using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.Helper;
 using Toggl.Foundation.MvvmCross.ViewModels;
 using Toggl.Daneel.Extensions.Reactive;
@@ -16,7 +17,7 @@ namespace Toggl.Daneel.ViewControllers
     [ModalCardPresentation]
     public sealed partial class SelectProjectViewController : KeyboardAwareViewController<SelectProjectViewModel>, IDismissableViewController
     {
-        public SelectProjectViewController() 
+        public SelectProjectViewController()
             : base(nameof(SelectProjectViewController))
         {
         }
@@ -24,6 +25,10 @@ namespace Toggl.Daneel.ViewControllers
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
+
+            TitleLabel.Text = Resources.Projects;
+            TextField.Placeholder = Resources.AddFilterProjects;
+            EmptyStateLabel.Text = Resources.EmptyProjectText;
 
             var source = new SelectProjectTableViewSource(ViewModel.Suggestions, ReactiveProjectSuggestionViewCell.Key);
             source.UseGrouping = ViewModel.UseGrouping;

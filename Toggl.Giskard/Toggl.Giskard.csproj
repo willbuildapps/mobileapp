@@ -383,7 +383,6 @@
     <Compile Include="Activities\StartTimeEntryActivity.cs" />
     <Compile Include="Extensions\VisibilityExtensions.cs" />
     <Compile Include="Activities\BrowserActivity.cs" />
-    <Compile Include="Services\MailServiceAndroid.cs" />
     <Compile Include="Extensions\CircularRevealAnimation.cs" />
     <Compile Include="Activities\EditTimeEntryActivity.cs" />
     <Compile Include="ApplicationShortcutCreator.cs" />

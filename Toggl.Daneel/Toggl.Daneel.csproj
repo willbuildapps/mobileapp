@@ -102,10 +102,6 @@
     <MtouchHttpClientHandler>HttpClientHandler</MtouchHttpClientHandler>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Facebook, Version=4.10.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\Xamarin.Facebook.iOS.4.30.0\lib\Xamarin.iOS10\Facebook.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Reactive, Version=4.1.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263">
       <HintPath>..\packages\System.Reactive.4.1.2\lib\netstandard2.0\System.Reactive.dll</HintPath>
@@ -232,6 +228,9 @@
     </Reference>
     <Reference Include="Xamarin.Essentials">
       <HintPath>..\packages\Xamarin.Essentials.1.0.0\lib\xamarinios10\Xamarin.Essentials.dll</HintPath>
+    </Reference>
+    <Reference Include="AdjustSdk.Xamarin.iOS">
+      <HintPath>..\packages\AdjustSdk.Xamarin.iOS.4.17.0\lib\xamarinios10\AdjustSdk.Xamarin.iOS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -672,9 +671,11 @@
     <Compile Include="Cells\BaseCollectionViewCell.cs" />
     <Compile Include="Extensions\Binders\ReactiveTableViewBinder.cs" />
     <Compile Include="Extensions\IntentPeriod.cs" />
+    <Compile Include="Extensions\Reactive\DurationFieldExtensions.cs" />
     <Compile Include="Extensions\Reactive\HueSaturationPickerViewExtensions.cs" />
     <Compile Include="Extensions\Reactive\UIScrollViewExtensions.cs" />
     <Compile Include="Extensions\Reactive\UISliderExtensions.cs" />
+    <Compile Include="Extensions\Reactive\WheelForegroundViewExtensions.cs" />
     <Compile Include="Extensions\SectionedIndexExtensions.cs" />
     <Compile Include="Services\PermissionsServiceIos.cs" />
     <Compile Include="Services\CalendarServiceIos.cs" />
@@ -954,7 +955,6 @@
     <Compile Include="Binding\SpiderOnARopeViewIsVisibleTargetBinding.cs" />
     <Compile Include="ApplicationShortcutCreator.cs" />
     <Compile Include="Extensions\PointExtensions.cs" />
-    <Compile Include="Services\MailServiceIos.cs" />
     <Compile Include="Autocomplete\TokenTextAttachment.cs" />
     <Compile Include="Autocomplete\AutocompleteExtensions.cs" />
     <Compile Include="Services\AnalyticsServiceIos.cs" />
