@@ -3,13 +3,14 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Android.Content;
 using Android.Graphics;
+using Android.OS;
 using Android.Runtime;
-using Android.Support.V4.Content;
 using Android.Util;
 using Android.Views;
 using MvvmCross.Plugin.Color.Platforms.Android;
 using Toggl.Foundation.Analytics;
 using Toggl.Giskard.Extensions;
+using Toggl.Giskard.Helper;
 using Toggl.Giskard.Views.EditDuration.Shapes;
 using Toggl.Multivac;
 using Toggl.Multivac.Extensions;
@@ -34,10 +35,13 @@ namespace Toggl.Giskard.Views.EditDuration
         private float capBorderStrokeWidth;
         private float capShadowWidth;
         private int capIconSize;
+        private int vibrationDurationInMilliseconds = 5;
+        private int vibrationAmplitude = 5;
         private PointF startTimePosition;
         private PointF endTimePosition;
         private PointF center;
         private RectF bounds;
+        private Vibrator hapticFeedbackProvider;
 
         private DateTimeOffset startTime;
         private DateTimeOffset endTime;
@@ -146,6 +150,7 @@ namespace Toggl.Giskard.Views.EditDuration
             capShadowWidth = 2.DpToPixels(Context);
             capBorderStrokeWidth = 1.DpToPixels(Context);
             wheelHandleDotIndicatorRadius = 2.DpToPixels(Context);
+            hapticFeedbackProvider = (Vibrator) Context.GetSystemService(Context.VibratorService);
         }
 
         #endregion
@@ -411,6 +416,7 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private void vibrate()
         {
+            hapticFeedbackProvider?.ActivateVibration(vibrationDurationInMilliseconds, vibrationAmplitude);
         }
 
         private void finishTouchEditing()
