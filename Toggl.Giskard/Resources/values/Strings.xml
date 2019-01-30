@@ -135,6 +135,7 @@ understand and agree to Toggl\'s</string>
     <string name="PlusThirtyMinutes">30m</string>
     <string name="PlusThirtyMinutes">30m</string>
     <string name="LoginBackRequest">Enter your password to log back in to your account:</string>
+    <string name="GroupTimeEntries">Group similar time entries</string>
 
     <string name="ReportsCalendarShortcutsTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsCalendarShortcutsTemplateSelector, Toggl.Giskard</string>
     <string name="ReportsCalendarTemplateSelector" translatable="false">Toggl.Giskard.TemplateSelectors.ReportsCalendarTemplateSelector, Toggl.Giskard</string>

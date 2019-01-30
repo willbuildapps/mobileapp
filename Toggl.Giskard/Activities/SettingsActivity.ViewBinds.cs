@@ -12,6 +12,7 @@ namespace Toggl.Giskard.Activities
         private View logoutView;
         private View feedbackView;
         private View manualModeView;
+        private View groupTimeEntriesView;
         private View is24hoursModeView;
         private View runningTimerNotificationsView;
         private View stoppedTimerNotificationsView;
@@ -29,6 +30,7 @@ namespace Toggl.Giskard.Activities
 
         private ImageView avatarView;
 
+        private Switch groupTimeEntriesSwitch;
         private Switch is24hoursModeSwitch;
         private Switch manualModeSwitch;
         private Switch runningTimerNotificationsSwitch;
@@ -44,6 +46,7 @@ namespace Toggl.Giskard.Activities
             feedbackView = FindViewById(Resource.Id.SettingsSubmitFeedbackButton);
             manualModeView = FindViewById(Resource.Id.SettingsToggleManualModeView);
             is24hoursModeView = FindViewById(Resource.Id.SettingsIs24HourModeView);
+            groupTimeEntriesView = FindViewById(Resource.Id.GroupTimeEntriesView);
             avatarContainer = FindViewById(Resource.Id.SettingsViewAvatarImageContainer);
             dateFormatView = FindViewById(Resource.Id.SettingsDateFormatView);
             beginningOfWeekView = FindViewById(Resource.Id.SettingsSelectBeginningOfWeekView);
@@ -63,6 +66,7 @@ namespace Toggl.Giskard.Activities
             is24hoursModeSwitch = FindViewById<Switch>(Resource.Id.SettingsIs24HourModeSwitch);
             runningTimerNotificationsSwitch = FindViewById<Switch>(Resource.Id.SettingsAreRunningTimerNotificationsEnabledSwitch);
             stoppedTimerNotificationsSwitch = FindViewById<Switch>(Resource.Id.SettingsAreStoppedTimerNotificationsEnabledSwitch);
+            groupTimeEntriesSwitch = FindViewById<Switch>(Resource.Id.GroupTimeEntriesSwitch);
 
             workspacesRecyclerView = FindViewById<RecyclerView>(Resource.Id.SettingsWorkspacesRecyclerView);
         }

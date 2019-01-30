@@ -65,6 +65,10 @@ namespace Toggl.Giskard.Activities
                 .Subscribe(manualModeSwitch.Rx().Checked())
                 .DisposedBy(DisposeBag);
 
+            ViewModel.IsGroupingTimeEntries
+               .Subscribe(groupTimeEntriesSwitch.Rx().Checked())
+               .DisposedBy(DisposeBag);
+
             ViewModel.UseTwentyFourHourFormat
                 .Subscribe(is24hoursModeSwitch.Rx().Checked())
                 .DisposedBy(DisposeBag);
@@ -124,6 +128,10 @@ namespace Toggl.Giskard.Activities
 
             manualModeView.Rx().Tap()
                 .Subscribe(ViewModel.ToggleManualMode)
+                .DisposedBy(DisposeBag);
+
+            groupTimeEntriesView.Rx()
+                .BindAction(ViewModel.ToggleTimeEntriesGrouping)
                 .DisposedBy(DisposeBag);
 
             is24hoursModeView.Rx()
