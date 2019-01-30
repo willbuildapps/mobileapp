@@ -1,6 +1,5 @@
-﻿using System.Reactive.Linq;
-using System.Threading.Tasks;
-using CoreGraphics;
+﻿using CoreGraphics;
+using Foundation;
 using Toggl.Daneel.Cells;
 using Toggl.Daneel.Presentation.Attributes;
 using Toggl.Daneel.ViewSources;
@@ -31,10 +30,8 @@ namespace Toggl.Daneel.ViewControllers
             View.ClipsToBounds = true;
 
             WorkspacesTableView.RegisterNibForCellReuse(SelectDefaultWorkspaceTableViewCell.Nib, SelectDefaultWorkspaceTableViewCell.Identifier);
-            var tableViewSource = new ListTableViewSource<SelectableWorkspaceViewModel, SelectDefaultWorkspaceTableViewCell>(
-                ViewModel.Workspaces,
-                SelectDefaultWorkspaceTableViewCell.Identifier
-            );
+            var tableViewSource = new ListTableViewSource<SelectableWorkspaceViewModel>(ViewModel.Workspaces);
+            tableViewSource.ConfigureCell = configureCell;
             tableViewSource.OnItemTapped = onWorkspaceTapped;
             WorkspacesTableView.Source = tableViewSource;
             WorkspacesTableView.TableFooterView = new UIKit.UIView(new CoreGraphics.CGRect(0, 0, UIKit.UIScreen.MainScreen.Bounds.Width, 24));
@@ -50,6 +47,14 @@ namespace Toggl.Daneel.ViewControllers
         private void onWorkspaceTapped(object sender, SelectableWorkspaceViewModel workspace)
         {
             ViewModel.SelectWorkspace.Execute(workspace);
+        }
+
+        private UITableViewCell configureCell(ListTableViewSource<SelectableWorkspaceViewModel> source,
+            UITableView tableView, NSIndexPath indexPath, SelectableWorkspaceViewModel model)
+        {
+            var cell = tableView.DequeueReusableCell(SelectDefaultWorkspaceTableViewCell.Identifier, indexPath) as SelectDefaultWorkspaceTableViewCell;
+            cell.Item = model;
+            return cell;
         }
 
         private void setDialogSize()
