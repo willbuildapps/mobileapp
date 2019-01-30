@@ -5,6 +5,7 @@ using MvvmCross.Platforms.Ios.Views;
 using Toggl.Daneel.Extensions;
 using Toggl.Daneel.Extensions.Reactive;
 using Toggl.Daneel.Presentation.Attributes;
+using Toggl.Daneel.Views.Settings;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation;
 using Toggl.Foundation.MvvmCross.ViewModels;
@@ -29,11 +30,11 @@ namespace Toggl.Daneel.ViewControllers
 
             TitleLabel.Text = Resources.DateFormat;
 
-            var source = new DateFormatsTableViewSource(DateFormatsTableView, ViewModel.DateTimeFormats);
-            
-            DateFormatsTableView.Source = source;
+            var tableViewSource = new DateFormatsTableViewSource(DateFormatsTableView, ViewModel.DateTimeFormats);
 
-            source.DateFormatSelected
+            DateFormatsTableView.Source = tableViewSource;
+
+            tableViewSource.DateFormatSelected
                 .Subscribe(ViewModel.SelectDateFormat.Inputs)
                 .DisposedBy(disposeBag);
 

@@ -8,9 +8,8 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class DateFormatsTableViewSource : ListTableViewSource<SelectableDateFormatViewModel, DateFormatViewCell>
+    public sealed class DateFormatsTableViewSource : ListTableViewSource<SelectableDateFormatViewModel>
     {
-        private const string cellIdentifier = nameof(DateFormatViewCell);
         private const int rowHeight = 48;
 
         public IObservable<SelectableDateFormatViewModel> DateFormatSelected
@@ -19,11 +18,20 @@ namespace Toggl.Daneel.ViewSources
                 .Select(e => e.EventArgs);
 
         public DateFormatsTableViewSource(UITableView tableView, IImmutableList<SelectableDateFormatViewModel> items)
-            : base(items, cellIdentifier)
+            : base(items)
         {
-            tableView.RegisterNibForCellReuse(DateFormatViewCell.Nib, cellIdentifier);
+            tableView.RegisterNibForCellReuse(DateFormatViewCell.Nib, DateFormatViewCell.Identifier);
+            ConfigureCell = configureCell;
         }
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
+
+        private UITableViewCell configureCell(ListTableViewSource<SelectableDateFormatViewModel> source,
+            UITableView tableView, NSIndexPath indexPath, SelectableDateFormatViewModel model)
+        {
+            var cell = tableView.DequeueReusableCell(DateFormatViewCell.Identifier) as DateFormatViewCell;
+            cell.Item = model;
+            return cell;
+        }
     }
 }
