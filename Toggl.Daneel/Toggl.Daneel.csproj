@@ -707,7 +707,7 @@
     <Compile Include="Binding\BarButtonCommandTargetBinding.cs" />
     <Compile Include="Binding\ViewAnimatedVisibilityTargetBinding.cs" />
     <Compile Include="ViewControllers\SyncFailuresViewController.cs" />
-    <Compile Include="ViewSources\Generic\ListCollectionViewSource.cs" />
+    <Compile Include="ViewSources\Generic\CollectionView\ListCollectionViewSource.cs" />
     <Compile Include="ViewSources\Generic\ListTableViewSource.cs" />
     <Compile Include="ViewSources\Generic\ReactiveSectionedListTableViewSource.cs" />
     <Compile Include="ViewSources\Generic\MutableSectionedListTableViewSource.cs" />

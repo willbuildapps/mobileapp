@@ -1,32 +1,25 @@
 using System;
 using System.Collections.Immutable;
-using System.Threading.Tasks;
 using Foundation;
-using Toggl.Daneel.Cells;
 using UIKit;
-
 
 namespace Toggl.Daneel.ViewSources
 {
-    public class ListCollectionViewSource<TModel, TCell> : UICollectionViewSource
-        where TCell : BaseCollectionViewCell<TModel>
+    public class ListCollectionViewSource<TModel> : UICollectionViewSource
     {
-        private readonly string cellIdentifier;
         internal IImmutableList<TModel> items;
 
         public EventHandler<TModel> OnItemTapped { get; set; }
+        public Func<ListCollectionViewSource<TModel>, UICollectionView, NSIndexPath, TModel, UICollectionViewCell> ConfigureCell;
 
-        public ListCollectionViewSource(IImmutableList<TModel> items, string cellIdentifier)
+        public ListCollectionViewSource(IImmutableList<TModel> items)
         {
             this.items = items;
-            this.cellIdentifier = cellIdentifier;
         }
 
         public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
         {
-            var cell = collectionView.DequeueReusableCell(cellIdentifier, indexPath) as BaseCollectionViewCell<TModel>;
-            cell.Item = items[indexPath.Row];
-            return cell;
+            return ConfigureCell(this, collectionView, indexPath, items[indexPath.Row]);
         }
 
         public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)

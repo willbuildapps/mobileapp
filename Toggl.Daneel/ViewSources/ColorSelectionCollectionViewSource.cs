@@ -11,7 +11,7 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class ColorSelectionCollectionViewSource : ListCollectionViewSource<SelectableColorViewModel, ColorSelectionViewCell>, IUICollectionViewDelegateFlowLayout
+    public sealed class ColorSelectionCollectionViewSource : ListCollectionViewSource<SelectableColorViewModel>, IUICollectionViewDelegateFlowLayout
     {
         public IObservable<MvxColor> ColorSelected
             => Observable
@@ -19,9 +19,9 @@ namespace Toggl.Daneel.ViewSources
                 .Select(e => e.EventArgs.Color);
 
         public ColorSelectionCollectionViewSource(IObservable<IEnumerable<SelectableColorViewModel>> colors)
-            : base (new List<SelectableColorViewModel>().ToImmutableList(), ColorSelectionViewCell.Identifier)
+            : base (new List<SelectableColorViewModel>().ToImmutableList())
         {
-
+            ConfigureCell = configureCell;
         }
 
         public void SetNewColors(IEnumerable<SelectableColorViewModel> colors)
@@ -48,5 +48,13 @@ namespace Toggl.Daneel.ViewSources
         public UIEdgeInsets GetInsetForSection(
             UICollectionView collectionView, UICollectionViewLayout layout, nint section)
             => new UIEdgeInsets(0, 0, 0, 0);
+
+        private UICollectionViewCell configureCell(ListCollectionViewSource<SelectableColorViewModel> source,
+            UICollectionView collectionView, NSIndexPath indexPath, SelectableColorViewModel colorViewModel)
+        {
+            var cell = collectionView.DequeueReusableCell(ColorSelectionViewCell.Identifier, indexPath) as ColorSelectionViewCell;
+            cell.Item = colorViewModel;
+            return cell;
+        }
     }
 }
