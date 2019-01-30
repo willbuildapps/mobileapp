@@ -17,7 +17,7 @@ namespace Toggl.Daneel.ViewControllers
 
             TableView.RowHeight = UITableView.AutomaticDimension;
             TableView.RegisterNibForCellReuse(SyncFailureCell.Nib, SyncFailureCell.Identifier);
-            var tableViewSource = new ListTableViewSource<SyncFailureItem>(ViewModel.SyncFailures);
+            var tableViewSource = new SectionedListTableViewSource<SyncFailureItem>(ViewModel.SyncFailures);
             tableViewSource.ConfigureCell = (source, tableView, indexPath, model) =>
             {
                 var cell = tableView.DequeueReusableCell(SyncFailureCell.Identifier, indexPath) as SyncFailureCell;

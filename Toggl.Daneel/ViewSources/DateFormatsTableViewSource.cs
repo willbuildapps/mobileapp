@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class DateFormatsTableViewSource : ListTableViewSource<SelectableDateFormatViewModel>
+    public sealed class DateFormatsTableViewSource : SectionedListTableViewSource<SelectableDateFormatViewModel>
     {
         private const int rowHeight = 48;
 
@@ -26,7 +26,7 @@ namespace Toggl.Daneel.ViewSources
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
 
-        private UITableViewCell configureCell(ListTableViewSource<SelectableDateFormatViewModel> source,
+        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableDateFormatViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableDateFormatViewModel model)
         {
             var cell = tableView.DequeueReusableCell(DateFormatViewCell.Identifier) as DateFormatViewCell;

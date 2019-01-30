@@ -711,7 +711,6 @@
     <Compile Include="ViewSources\Generic\CollectionView\ListCollectionViewSource.cs" />
     <Compile Include="ViewSources\Generic\ReactiveSectionedListTableViewSource.cs" />
     <Compile Include="ViewSources\Generic\MutableSectionedListTableViewSource.cs" />
-    <Compile Include="ViewSources\Generic\TableView\ListTableViewSource.cs" />
     <Compile Include="ViewSources\Generic\TableView\SectionedListTableViewSource.cs" />
     <Compile Include="ViewSources\SelectProjectTableViewSource.cs" />
     <Compile Include="Binding\TextFieldSecureTextEntryTargetBinding.cs" />

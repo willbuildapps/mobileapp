@@ -9,14 +9,9 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class WorkspaceTableViewSource : ListTableViewSource<SelectableWorkspaceViewModel>
+    public sealed class WorkspaceTableViewSource : SectionedListTableViewSource<SelectableWorkspaceViewModel>
     {
         private const int rowHeight = 64;
-
-        public IObservable<SelectableWorkspaceViewModel> WorkspaceSelected
-            => Observable
-                .FromEventPattern<SelectableWorkspaceViewModel>(e => OnItemTapped += e, e => OnItemTapped -= e)
-                .Select(e => e.EventArgs);
 
         public WorkspaceTableViewSource()
             : base(ImmutableArray<SelectableWorkspaceViewModel>.Empty)
@@ -27,11 +22,9 @@ namespace Toggl.Daneel.ViewSources
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
 
         public void SetNewWorkspaces(IEnumerable<SelectableWorkspaceViewModel> workspaces)
-        {
-            items = workspaces.ToImmutableList();
-        }
+            => SetItems(workspaces.ToImmutableList());
 
-        private UITableViewCell configureCell(ListTableViewSource<SelectableWorkspaceViewModel> source,
+        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableWorkspaceViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableWorkspaceViewModel model)
         {
             var cell = tableView.DequeueReusableCell(WorkspaceViewCell.Identifier) as WorkspaceViewCell;

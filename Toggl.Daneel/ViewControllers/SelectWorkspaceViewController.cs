@@ -21,7 +21,7 @@ namespace Toggl.Daneel.ViewControllers
     {
         private WorkspaceTableViewSource tableViewSource = new WorkspaceTableViewSource();
 
-        public SelectWorkspaceViewController() 
+        public SelectWorkspaceViewController()
             : base(nameof(SelectWorkspaceViewController))
         {
         }
@@ -40,7 +40,7 @@ namespace Toggl.Daneel.ViewControllers
                 .BindAction(ViewModel.Close)
                 .DisposedBy(DisposeBag);
 
-            tableViewSource.WorkspaceSelected
+            tableViewSource.Rx().ModelSelected()
                 .Subscribe(ViewModel.SelectWorkspace.Inputs)
                 .DisposedBy(DisposeBag);
 

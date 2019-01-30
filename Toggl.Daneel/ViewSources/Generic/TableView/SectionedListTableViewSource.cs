@@ -19,9 +19,19 @@ namespace Toggl.Daneel.ViewSources
             this.items = items;
         }
 
+        public SectionedListTableViewSource(IImmutableList<TModel> section)
+        {
+            this.items = ImmutableList.Create(section);
+        }
+
         public void SetItems(IImmutableList<IImmutableList<TModel>> items)
         {
             this.items = items;
+        }
+
+        public void SetItems(IImmutableList<TModel> section)
+        {
+            this.items = ImmutableList.Create(section);
         }
 
         public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)

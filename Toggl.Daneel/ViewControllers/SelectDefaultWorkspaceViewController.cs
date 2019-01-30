@@ -30,7 +30,7 @@ namespace Toggl.Daneel.ViewControllers
             View.ClipsToBounds = true;
 
             WorkspacesTableView.RegisterNibForCellReuse(SelectDefaultWorkspaceTableViewCell.Nib, SelectDefaultWorkspaceTableViewCell.Identifier);
-            var tableViewSource = new ListTableViewSource<SelectableWorkspaceViewModel>(ViewModel.Workspaces);
+            var tableViewSource = new SectionedListTableViewSource<SelectableWorkspaceViewModel>(ViewModel.Workspaces);
             tableViewSource.ConfigureCell = configureCell;
             tableViewSource.OnItemTapped = onWorkspaceTapped;
             WorkspacesTableView.Source = tableViewSource;
@@ -49,7 +49,7 @@ namespace Toggl.Daneel.ViewControllers
             ViewModel.SelectWorkspace.Execute(workspace);
         }
 
-        private UITableViewCell configureCell(ListTableViewSource<SelectableWorkspaceViewModel> source,
+        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableWorkspaceViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableWorkspaceViewModel model)
         {
             var cell = tableView.DequeueReusableCell(SelectDefaultWorkspaceTableViewCell.Identifier, indexPath) as SelectDefaultWorkspaceTableViewCell;

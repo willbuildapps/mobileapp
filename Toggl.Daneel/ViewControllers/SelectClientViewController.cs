@@ -50,7 +50,7 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(ViewModel.FilterText)
                 .DisposedBy(DisposeBag);
 
-            tableViewSource.ClientSelected
+            tableViewSource.Rx().ModelSelected()
                 .Subscribe(ViewModel.SelectClient.Inputs)
                 .DisposedBy(DisposeBag);
 

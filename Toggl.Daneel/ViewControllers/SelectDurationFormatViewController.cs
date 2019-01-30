@@ -33,14 +33,14 @@ namespace Toggl.Daneel.ViewControllers
             TitleLabel.Text = Resources.DurationFormat;
 
             var source = new DurationFormatsTableViewSource(DurationFormatsTableView, ViewModel.DurationFormats);
-            
+
             DurationFormatsTableView.Source = source;
 
             BackButton.Rx()
                 .BindAction(ViewModel.Close)
                 .DisposedBy(disposeBag);
 
-            source.DurationFormatSelected
+            source.Rx().ModelSelected()
                 .Subscribe(ViewModel.SelectDurationFormat.Inputs)
                 .DisposedBy(disposeBag);
         }

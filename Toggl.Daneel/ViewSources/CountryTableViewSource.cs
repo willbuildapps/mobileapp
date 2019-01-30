@@ -10,13 +10,8 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class CountryTableViewSource : ListTableViewSource<SelectableCountryViewModel>
+    public sealed class CountryTableViewSource : SectionedListTableViewSource<SelectableCountryViewModel>
     {
-        public IObservable<SelectableCountryViewModel> CountrySelected
-            => Observable
-                .FromEventPattern<SelectableCountryViewModel>(e => OnItemTapped += e, e => OnItemTapped -= e)
-                .Select(e => e.EventArgs);
-
         private const int rowHeight = 48;
 
         public CountryTableViewSource()
@@ -26,13 +21,11 @@ namespace Toggl.Daneel.ViewSources
         }
 
         public void SetNewCountries(IEnumerable<SelectableCountryViewModel> countries)
-        {
-            items = countries.ToImmutableList();
-        }
+            => SetItems(countries.ToImmutableList());
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
 
-        private UITableViewCell configureCell(ListTableViewSource<SelectableCountryViewModel> source,
+        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableCountryViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableCountryViewModel model)
         {
             var cell = tableView.DequeueReusableCell(CountryViewCell.Identifier) as CountryViewCell;

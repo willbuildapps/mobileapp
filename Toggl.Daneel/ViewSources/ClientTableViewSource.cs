@@ -10,13 +10,8 @@ using UIKit;
 
 namespace Toggl.Daneel.ViewSources
 {
-    public sealed class ClientTableViewSource : ListTableViewSource<SelectableClientBaseViewModel>
+    public sealed class ClientTableViewSource : SectionedListTableViewSource<SelectableClientBaseViewModel>
     {
-        public IObservable<SelectableClientBaseViewModel> ClientSelected
-            => Observable
-                .FromEventPattern<SelectableClientBaseViewModel>(e => OnItemTapped += e, e => OnItemTapped -= e)
-                .Select(e => e.EventArgs);
-
         private const int rowHeight = 48;
 
         public ClientTableViewSource() : base(ImmutableArray<SelectableClientBaseViewModel>.Empty)
@@ -25,13 +20,11 @@ namespace Toggl.Daneel.ViewSources
         }
 
         public void SetNewClients(IEnumerable<SelectableClientBaseViewModel> clients)
-        {
-            items = clients.ToImmutableList();
-        }
+            => SetItems(clients.ToImmutableList());
 
         public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
 
-        private UITableViewCell configureCell(ListTableViewSource<SelectableClientBaseViewModel> source,
+        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableClientBaseViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableClientBaseViewModel model)
         {
             var identifier = model is SelectableClientCreationViewModel ? CreateClientViewCell.Identifier : ClientViewCell.Identifier;

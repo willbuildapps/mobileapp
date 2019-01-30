@@ -47,7 +47,7 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(ViewModel.FilterText)
                 .DisposedBy(DisposeBag);
 
-            tableViewSource.CountrySelected
+            tableViewSource.Rx().ModelSelected()
                 .Subscribe(ViewModel.SelectCountry.Inputs)
                 .DisposedBy(DisposeBag);
 
