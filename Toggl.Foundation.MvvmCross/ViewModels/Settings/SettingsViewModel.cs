@@ -74,6 +74,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public IObservable<string> DurationFormat { get; }
         public IObservable<string> BeginningOfWeek { get; }
         public IObservable<bool> IsManualModeEnabled { get; }
+        public IObservable<bool> IsGroupingTimeEntries { get; }
         public IObservable<bool> AreRunningTimerNotificationsEnabled { get; }
         public IObservable<bool> AreStoppedTimerNotificationsEnabled { get; }
         public IObservable<bool> UseTwentyFourHourFormat { get; }
@@ -90,6 +91,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         public UIAction SelectDateFormat { get; }
         public UIAction PickDefaultWorkspace { get; }
         public UIAction SelectDurationFormat { get; }
+        public UIAction ToggleTimeEntriesGrouping { get; }
         public UIAction SelectBeginningOfWeek { get; }
         public UIAction Close { get; }
 
@@ -191,6 +193,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .Select(preferences => preferences.TimeOfDayFormat.IsTwentyFourHoursFormat)
                     .DistinctUntilChanged();
 
+            IsGroupingTimeEntries =
+                dataSource.Preferences.Current
+                    .Select(preferences => preferences.CollapseTimeEntries)
+                    .DistinctUntilChanged();
+
             UserAvatar =
                 dataSource.User.Current
                     .Select(user => user.ImageUrl)
@@ -233,6 +240,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             PickDefaultWorkspace = rxActionFactory.FromAsync(pickDefaultWorkspace);
             SelectDurationFormat = rxActionFactory.FromAsync(selectDurationFormat);
             SelectBeginningOfWeek = rxActionFactory.FromAsync(selectBeginningOfWeek);
+            ToggleTimeEntriesGrouping = rxActionFactory.FromAsync(toggleTimeEntriesGrouping);
             SelectDefaultWorkspace = rxActionFactory.FromAsync<SelectableWorkspaceViewModel>(selectDefaultWorkspace);
             Close = rxActionFactory.FromAsync(() => navigationService.Close(this));
         }
@@ -325,13 +333,15 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private async Task updatePreferences(
             New<DurationFormat> durationFormat = default(New<DurationFormat>),
             New<DateFormat> dateFormat = default(New<DateFormat>),
-            New<TimeFormat> timeFormat = default(New<TimeFormat>))
+            New<TimeFormat> timeFormat = default(New<TimeFormat>),
+            New<bool> collapseTimeEntries = default(New<bool>))
         {
             var preferencesDto = new EditPreferencesDTO
             {
                 DurationFormat = durationFormat,
                 DateFormat = dateFormat,
-                TimeOfDayFormat = timeFormat
+                TimeOfDayFormat = timeFormat,
+                CollapseTimeEntries = collapseTimeEntries
             };
 
             await interactorFactory.UpdatePreferences(preferencesDto).Execute();
@@ -407,6 +417,11 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                     .Navigate<SelectWorkspaceViewModel, long, long>(defaultWorkspace.Id);
 
             await changeDefaultWorkspace(selectedWorkspaceId);
+        }
+
+        private async Task toggleTimeEntriesGrouping() 
+        {
+            await updatePreferences(collapseTimeEntries: !currentPreferences.CollapseTimeEntries);
         }
 
         private async Task selectDurationFormat()

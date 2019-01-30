@@ -774,4 +774,7 @@ Use them to add keywords to your time entries.</value>
     <data name="ShowReportsInvocationPhrase">
         <value>Show Report</value>
     </data>
+    <data name="GroupTimeEntries">
+        <value>Group similar time entries</value>
+    </data>
 </root>
