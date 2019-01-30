@@ -7,7 +7,6 @@ namespace Toggl.Daneel.ViewSources
 {
     public class ListTableViewSource<TModel> : UITableViewSource
     {
-        protected readonly string cellIdentifier;
         protected IImmutableList<TModel> items;
 
         public EventHandler<TModel> OnItemTapped { get; set; }
