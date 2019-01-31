@@ -7,16 +7,22 @@ namespace Toggl.Daneel.ViewSources
 {
     public class SectionedListTableViewSource<TModel> : UITableViewSource
     {
+        public delegate UITableViewCell CellConfiguration(SectionedListTableViewSource<TModel> source, UITableView tableView, NSIndexPath indexPath, TModel model);
+        public delegate UIView HeaderConfiguration(SectionedListTableViewSource<TModel>, UITableView tableView, int section);
+
         protected IImmutableList<IImmutableList<TModel>> sections;
 
         public EventHandler<TModel> OnItemTapped { get; set; }
 
-        public Func<SectionedListTableViewSource<TModel>, UITableView, NSIndexPath, TModel, UITableViewCell> ConfigureCell;
+        public CellConfiguration configureCell;
+        public HeaderConfiguration configureHeader;
         public Func<SectionedListTableViewSource<TModel>, UITableView, int, UIView> ViewForHeaderInSection;
 
-        public SectionedListTableViewSource(IImmutableList<IImmutableList<TModel>> sections)
+        public SectionedListTableViewSource(IImmutableList<IImmutableList<TModel>> sections, CellConfiguration configureCell, HeaderConfiguration configureHeader)
         {
             this.sections = sections;
+            this.configureCell = configureCell;
+            this.configureHeader = configureHeader;
         }
 
         public SectionedListTableViewSource(IImmutableList<TModel> items)
@@ -35,9 +41,7 @@ namespace Toggl.Daneel.ViewSources
         }
 
         public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
-        {
-            return ConfigureCell(this, tableView, indexPath, sections[indexPath.Section][indexPath.Row]);
-        }
+            => configureCell(this, tableView, indexPath, sections[indexPath.Section][indexPath.Row]);
 
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
         {
@@ -52,6 +56,6 @@ namespace Toggl.Daneel.ViewSources
             => sections[(int)section].Count;
 
         public override UIView GetViewForHeader(UITableView tableView, nint section)
-            => ViewForHeaderInSection(this, tableView, (int)section);
+            => configureHeader(this, tableView, (int)section);
     }
 }
