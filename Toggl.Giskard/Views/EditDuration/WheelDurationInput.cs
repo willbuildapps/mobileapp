@@ -39,7 +39,7 @@ namespace Toggl.Giskard.Views.EditDuration
 
         private BehaviorSubject<TimeSpan> durationSubject = new BehaviorSubject<TimeSpan>(TimeSpan.Zero);
 
-        public IObservable<TimeSpan> Duration;
+        public IObservable<TimeSpan> Duration { get; private set; }
 
         public WheelDurationInput(IntPtr handle, JniHandleOwnership ownership)
             : base(handle, ownership)
@@ -190,12 +190,12 @@ namespace Toggl.Giskard.Views.EditDuration
 
             if (isEditing)
             {
-                editable.SetSpan(new StyleSpan(TypefaceStyle.Bold), 0, editable.Length(), SpanTypes.InclusiveInclusive);
+                editable.SetSpan(new TypefaceSpan("sans-serif-medium"), 0, editable.Length(), SpanTypes.InclusiveInclusive);
                 editable.SetSpan(new ForegroundColorSpan(fadedTextColor), 0, splitPoint, SpanTypes.InclusiveInclusive);
             }
             else
             {
-                editable.SetSpan(new StyleSpan(TypefaceStyle.Bold), 0, splitPoint, SpanTypes.InclusiveInclusive);
+                editable.SetSpan(new TypefaceSpan("sans-serif-medium"), 0, splitPoint, SpanTypes.InclusiveInclusive);
             }
         }
 
