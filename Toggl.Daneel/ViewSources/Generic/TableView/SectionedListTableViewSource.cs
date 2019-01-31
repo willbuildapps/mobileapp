@@ -55,6 +55,6 @@ namespace Toggl.Daneel.ViewSources
             => sections[(int)section].Count;
 
         public override UIView GetViewForHeader(UITableView tableView, nint section)
-            => ConfigureHeader(this, tableView, (int)section);
+            => ConfigureHeader == null ? null : ConfigureHeader(this, tableView, (int)section);
     }
 }
