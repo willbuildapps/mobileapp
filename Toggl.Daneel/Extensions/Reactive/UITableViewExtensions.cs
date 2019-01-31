@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reactive;
 using Foundation;
@@ -25,12 +26,12 @@ namespace Toggl.Daneel.Extensions.Reactive
             });
         }
 
-        public static IObserver<IImmutableList<TModel>> Items<TModel>(
+        public static IObserver<IEnumerable<TModel>> Items<TModel>(
             this IReactive<UITableView> reactive, SectionedListTableViewSource<TModel> dataSource)
         {
-            return Observer.Create<IImmutableList<TModel>>(list =>
+            return Observer.Create<IEnumerable<TModel>>(list =>
             {
-                dataSource.SetItems(list);
+                dataSource.SetItems(list.ToImmutableList());
                 reactive.Base.ReloadData();
             });
         }
