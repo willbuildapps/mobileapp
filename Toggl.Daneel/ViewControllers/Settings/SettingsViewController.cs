@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reactive;
 using System.Reactive.Linq;
 using MvvmCross.Platforms.Ios.Presenters.Attributes;
 using MvvmCross.Plugin.Color.Platforms.Ios;
@@ -131,8 +132,8 @@ namespace Toggl.Daneel.ViewControllers
                 .Subscribe(ViewModel.ToggleManualMode)
                 .DisposedBy(DisposeBag);
 
-            GroupSimilarTimeEntriesSwitch.Rx().Changed()
-                .Subscribe(ViewModel.ToggleTimeEntriesGrouping.Inputs)
+            GroupSimilarTimeEntriesSwitch.Rx()
+                .BindAction(ViewModel.ToggleTimeEntriesGrouping)
                 .DisposedBy(DisposeBag);
 
             BeginningOfWeekView.Rx()

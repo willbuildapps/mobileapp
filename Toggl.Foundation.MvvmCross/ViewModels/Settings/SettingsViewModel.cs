@@ -52,6 +52,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
         private readonly IIntentDonationService intentDonationService;
         private readonly IStopwatchProvider stopwatchProvider;
         private readonly IRxActionFactory rxActionFactory;
+        private readonly ISchedulerProvider schedulerProvider;
 
         private bool isSyncing;
         private bool isLoggingOut;
@@ -110,7 +111,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IPrivateSharedStorageService privateSharedStorageService,
             IIntentDonationService intentDonationService,
             IStopwatchProvider stopwatchProvider,
-            IRxActionFactory rxActionFactory)
+            IRxActionFactory rxActionFactory,
+            ISchedulerProvider schedulerProvider)
         {
             Ensure.Argument.IsNotNull(dataSource, nameof(dataSource));
             Ensure.Argument.IsNotNull(platformInfo, nameof(platformInfo));
@@ -125,6 +127,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             Ensure.Argument.IsNotNull(intentDonationService, nameof(intentDonationService));
             Ensure.Argument.IsNotNull(stopwatchProvider, nameof(stopwatchProvider));
             Ensure.Argument.IsNotNull(rxActionFactory, nameof(rxActionFactory));
+            Ensure.Argument.IsNotNull(schedulerProvider, nameof(schedulerProvider));
 
             this.dataSource = dataSource;
             this.platformInfo = platformInfo;
@@ -140,6 +143,7 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             this.intentDonationService = intentDonationService;
             this.privateSharedStorageService = privateSharedStorageService;
             this.rxActionFactory = rxActionFactory;
+            this.schedulerProvider = schedulerProvider;
 
             IsSynced = dataSource.SyncManager.ProgressObservable.SelectMany(checkSynced);
 
@@ -196,7 +200,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
             IsGroupingTimeEntries =
                 dataSource.Preferences.Current
                     .Select(preferences => preferences.CollapseTimeEntries)
-                    .DistinctUntilChanged();
+                    .DistinctUntilChanged()
+                    .AsDriver(false, schedulerProvider);
 
             UserAvatar =
                 dataSource.User.Current
