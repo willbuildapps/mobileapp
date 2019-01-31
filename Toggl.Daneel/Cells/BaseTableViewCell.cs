@@ -33,7 +33,7 @@ namespace Toggl.Daneel.Cells
         {
             return (source, tableView, indexPath, model) =>
             {
-                var cell = tableView.DequeueReusableCell(cellIdentifier, indexPath) as BaseTableViewCell<TModel>;
+                var cell = (BaseTableViewCell<TModel>)tableView.DequeueReusableCell(cellIdentifier, indexPath);
                 cell.Item = model;
                 return cell;
             };

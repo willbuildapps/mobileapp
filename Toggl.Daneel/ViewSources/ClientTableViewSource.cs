@@ -23,7 +23,7 @@ namespace Toggl.Daneel.ViewSources
             UITableView tableView, NSIndexPath indexPath, SelectableClientBaseViewModel model)
         {
             var identifier = model is SelectableClientCreationViewModel ? CreateClientViewCell.Identifier : ClientViewCell.Identifier;
-            var cell = tableView.DequeueReusableCell(identifier) as BaseTableViewCell<SelectableClientBaseViewModel>;
+            var cell = (BaseTableViewCell<SelectableClientBaseViewModel>)tableView.DequeueReusableCell(identifier);
             cell.Item = model;
             return cell;
         }
