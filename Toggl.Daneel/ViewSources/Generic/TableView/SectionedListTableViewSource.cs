@@ -8,7 +8,7 @@ namespace Toggl.Daneel.ViewSources
     public class SectionedListTableViewSource<TModel> : UITableViewSource
     {
         public delegate UITableViewCell CellConfiguration(SectionedListTableViewSource<TModel> source, UITableView tableView, NSIndexPath indexPath, TModel model);
-        public delegate UIView HeaderConfiguration(SectionedListTableViewSource<TModel>, UITableView tableView, int section);
+        public delegate UIView HeaderConfiguration(SectionedListTableViewSource<TModel> source, UITableView tableView, int section);
 
         protected IImmutableList<IImmutableList<TModel>> sections;
 
@@ -16,18 +16,19 @@ namespace Toggl.Daneel.ViewSources
 
         public CellConfiguration configureCell;
         public HeaderConfiguration configureHeader;
-        public Func<SectionedListTableViewSource<TModel>, UITableView, int, UIView> ViewForHeaderInSection;
 
-        public SectionedListTableViewSource(IImmutableList<IImmutableList<TModel>> sections, CellConfiguration configureCell, HeaderConfiguration configureHeader)
+        public SectionedListTableViewSource(CellConfiguration configureCell, IImmutableList<IImmutableList<TModel>> sections,  HeaderConfiguration configureHeader = null)
         {
             this.sections = sections;
             this.configureCell = configureCell;
             this.configureHeader = configureHeader;
         }
 
-        public SectionedListTableViewSource(IImmutableList<TModel> items)
+        public SectionedListTableViewSource(CellConfiguration configureCell, IImmutableList<TModel> items = null, HeaderConfiguration configureHeader = null)
         {
-            this.sections = ImmutableList.Create(items);
+            sections = items == null ? ImmutableList<IImmutableList<TModel>>.Empty : ImmutableList.Create(items);
+            this.configureCell = configureCell;
+            this.configureHeader = configureHeader;
         }
 
         public void SetItems(IImmutableList<IImmutableList<TModel>> sections)
@@ -37,7 +38,7 @@ namespace Toggl.Daneel.ViewSources
 
         public void SetItems(IImmutableList<TModel> items)
         {
-            this.sections = ImmutableList.Create(items);
+            sections = ImmutableList.Create(items);
         }
 
         public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
