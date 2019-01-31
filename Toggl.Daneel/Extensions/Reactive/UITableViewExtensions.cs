@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Reactive;
+using Foundation;
 using Toggl.Daneel.Cells;
 using Toggl.Daneel.ViewSources;
 using Toggl.Foundation.MvvmCross.Reactive;
@@ -18,6 +19,16 @@ namespace Toggl.Daneel.Extensions.Reactive
             this IReactive<UITableView> reactive, SectionedListTableViewSource<TModel> dataSource)
         {
             return Observer.Create<IImmutableList<IImmutableList<TModel>>>(list =>
+            {
+                dataSource.SetItems(list);
+                reactive.Base.ReloadData();
+            });
+        }
+
+        public static IObserver<IImmutableList<TModel>> Items<TModel>(
+            this IReactive<UITableView> reactive, SectionedListTableViewSource<TModel> dataSource)
+        {
+            return Observer.Create<IImmutableList<TModel>>(list =>
             {
                 dataSource.SetItems(list);
                 reactive.Base.ReloadData();
