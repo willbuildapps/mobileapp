@@ -310,13 +310,8 @@ namespace Toggl.Foundation.MvvmCross.ViewModels
                 yield return suggestion;
 
                 if (suggestion is ProjectSuggestion projectSuggestion && projectSuggestion.TasksVisible)
-                {
-                    var orderedTasks = projectSuggestion.Tasks
-                        .OrderBy(t => t.Name);
-
-                    foreach (var taskSuggestion in orderedTasks)
+                    foreach (var taskSuggestion in projectSuggestion.Tasks)
                         yield return taskSuggestion;
-                }
             }
         }
     }
