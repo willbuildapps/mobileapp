@@ -14,17 +14,12 @@ namespace Toggl.Daneel.ViewSources
     {
         private const int rowHeight = 48;
 
-        public ClientTableViewSource() : base(ImmutableArray<SelectableClientBaseViewModel>.Empty)
+        public ClientTableViewSource(UITableView tableView) : base(configureCell)
         {
-            ConfigureCell = configureCell;
+            tableView.RowHeight = rowHeight;
         }
 
-        public void SetNewClients(IEnumerable<SelectableClientBaseViewModel> clients)
-            => SetItems(clients.ToImmutableList());
-
-        public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => rowHeight;
-
-        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableClientBaseViewModel> source,
+        private static UITableViewCell configureCell(SectionedListTableViewSource<SelectableClientBaseViewModel> source,
             UITableView tableView, NSIndexPath indexPath, SelectableClientBaseViewModel model)
         {
             var identifier = model is SelectableClientCreationViewModel ? CreateClientViewCell.Identifier : ClientViewCell.Identifier;

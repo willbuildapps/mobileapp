@@ -17,13 +17,10 @@ namespace Toggl.Daneel.ViewControllers
 
             TableView.RowHeight = UITableView.AutomaticDimension;
             TableView.RegisterNibForCellReuse(SyncFailureCell.Nib, SyncFailureCell.Identifier);
-            var tableViewSource = new SectionedListTableViewSource<SyncFailureItem>(ViewModel.SyncFailures);
-            tableViewSource.ConfigureCell = (source, tableView, indexPath, model) =>
-            {
-                var cell = tableView.DequeueReusableCell(SyncFailureCell.Identifier, indexPath) as SyncFailureCell;
-                cell.Item = model;
-                return cell;
-            };
+            var tableViewSource = new SectionedListTableViewSource<SyncFailureItem>(
+                SyncFailureCell.CellConfiguration(SyncFailureCell.Identifier),
+                ViewModel.SyncFailures
+            );
             TableView.Source = tableViewSource;
         }
     }

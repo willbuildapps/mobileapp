@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Foundation;
 using Toggl.Daneel.Cells.Calendar;
@@ -14,15 +14,16 @@ namespace Toggl.Daneel.ViewSources
 
         public UIColor SectionHeaderBackgroundColor { get; set; } = UIColor.White;
 
-        public SelectUserCalendarsTableViewSource(UITableView tableView) : base(ImmutableList<IImmutableList<SelectableUserCalendarViewModel>>.Empty)
+        public SelectUserCalendarsTableViewSource(UITableView tableView) : base(
+            SelectableUserCalendarViewCell.CellConfiguration(SelectableUserCalendarViewCell.Identifier)
+        )
         {
+            ConfigureHeader = viewForHeaderInSection;
+
             tableView.RegisterNibForCellReuse(SelectableUserCalendarViewCell.Nib, SelectableUserCalendarViewCell.Identifier);
             tableView.RegisterNibForHeaderFooterViewReuse(UserCalendarListHeaderViewCell.Nib, UserCalendarListHeaderViewCell.Identifier);
             tableView.SectionHeaderHeight = headerHeight;
             tableView.RowHeight = rowHeight;
-
-            ConfigureCell = configureCell;
-            ViewForHeaderInSection = viewForHeaderInSection;
         }
 
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
@@ -35,18 +36,10 @@ namespace Toggl.Daneel.ViewSources
             tableView.DeselectRow(indexPath, true);
         }
 
-        private UITableViewCell configureCell(SectionedListTableViewSource<SelectableUserCalendarViewModel> source,
-            UITableView tableView, NSIndexPath indexPath, SelectableUserCalendarViewModel model)
-        {
-            var cell = tableView.DequeueReusableCell(SelectableUserCalendarViewCell.Identifier, indexPath) as SelectableUserCalendarViewCell;
-            cell.Item = model;
-            return cell;
-        }
-
         private UIView viewForHeaderInSection(SectionedListTableViewSource<SelectableUserCalendarViewModel> source, UITableView tableView, int section)
         {
             var header = tableView.DequeueReusableHeaderFooterView(UserCalendarListHeaderViewCell.Identifier) as UserCalendarListHeaderViewCell;
-            header.Item = sections[(int)section].First().SourceName;
+            header.Item = sections[section].First().SourceName;
             header.ContentView.BackgroundColor = SectionHeaderBackgroundColor;
             return header;
         }

@@ -726,7 +726,6 @@
     <Compile Include="ViewControllers\StartTimeEntryViewController.designer.cs">
       <DependentUpon>StartTimeEntryViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewSources\WorkspaceTableViewSource.cs" />
     <Compile Include="Views\ActivityIndicatorView.cs" />
     <Compile Include="Presentation\Attributes\ModalCardPresentationAttribute.cs" />
     <Compile Include="Presentation\Attributes\NestedChildPresentationAttribute.cs" />
@@ -974,12 +973,10 @@
     <Compile Include="ViewControllers\SelectDateFormatViewController.designer.cs">
       <DependentUpon>SelectDateFormatViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewSources\DateFormatsTableViewSource.cs" />
     <Compile Include="ViewControllers\SelectDurationFormatViewController.cs" />
     <Compile Include="ViewControllers\SelectDurationFormatViewController.designer.cs">
       <DependentUpon>SelectDurationFormatViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewSources\DurationFormatsTableViewSource.cs" />
     <Compile Include="Views\Settings\DurationFormatViewCell.cs" />
     <Compile Include="Views\Settings\DurationFormatViewCell.designer.cs">
       <DependentUpon>DurationFormatViewCell.cs</DependentUpon>
@@ -1021,7 +1018,6 @@
     <Compile Include="ViewControllers\SelectCountryViewController.designer.cs">
       <DependentUpon>SelectCountryViewController.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewSources\CountryTableViewSource.cs" />
     <Compile Include="Views\CountrySelection\CountryViewCell.cs" />
     <Compile Include="Views\CountrySelection\CountryViewCell.designer.cs">
       <DependentUpon>CountryViewCell.cs</DependentUpon>

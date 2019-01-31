@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Toggl.Daneel.Extensions;
@@ -19,7 +20,7 @@ namespace Toggl.Daneel.ViewControllers
     [ModalCardPresentation]
     public partial class SelectWorkspaceViewController : ReactiveViewController<SelectWorkspaceViewModel>, IDismissableViewController
     {
-        private WorkspaceTableViewSource tableViewSource = new WorkspaceTableViewSource();
+        private const int rowHeight = 64;
 
         public SelectWorkspaceViewController()
             : base(nameof(SelectWorkspaceViewController))
@@ -30,9 +31,15 @@ namespace Toggl.Daneel.ViewControllers
         {
             base.ViewDidLoad();
 
+            WorkspaceTableView.RowHeight = rowHeight;
             WorkspaceTableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
             WorkspaceTableView.RegisterNibForCellReuse(WorkspaceViewCell.Nib, WorkspaceViewCell.Identifier);
-            WorkspaceTableView.Source = tableViewSource;
+
+            var source = new SectionedListTableViewSource<SelectableWorkspaceViewModel>(
+                WorkspaceViewCell.CellConfiguration(WorkspaceViewCell.Identifier),
+                ViewModel.Workspaces.ToImmutableList()
+            );
+            WorkspaceTableView.Source = source;
 
             TitleLabel.Text = ViewModel.Title;
 
@@ -40,23 +47,15 @@ namespace Toggl.Daneel.ViewControllers
                 .BindAction(ViewModel.Close)
                 .DisposedBy(DisposeBag);
 
-            tableViewSource.Rx().ModelSelected()
+            source.Rx().ModelSelected()
                 .Subscribe(ViewModel.SelectWorkspace.Inputs)
                 .DisposedBy(DisposeBag);
-
-            replaceWorkspaces(ViewModel.Workspaces);
         }
 
         public async Task<bool> Dismiss()
         {
             await ViewModel.Close.Execute();
             return true;
-        }
-
-        private void replaceWorkspaces(IReadOnlyCollection<SelectableWorkspaceViewModel> workspaces)
-        {
-            tableViewSource.SetNewWorkspaces(workspaces);
-            WorkspaceTableView.ReloadData();
         }
     }
 }
