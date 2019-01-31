@@ -7,49 +7,49 @@ namespace Toggl.Daneel.ViewSources
 {
     public class SectionedListTableViewSource<TModel> : UITableViewSource
     {
-        protected IImmutableList<IImmutableList<TModel>> items;
+        protected IImmutableList<IImmutableList<TModel>> sections;
 
         public EventHandler<TModel> OnItemTapped { get; set; }
 
         public Func<SectionedListTableViewSource<TModel>, UITableView, NSIndexPath, TModel, UITableViewCell> ConfigureCell;
         public Func<SectionedListTableViewSource<TModel>, UITableView, int, UIView> ViewForHeaderInSection;
 
-        public SectionedListTableViewSource(IImmutableList<IImmutableList<TModel>> items)
+        public SectionedListTableViewSource(IImmutableList<IImmutableList<TModel>> sections)
         {
-            this.items = items;
+            this.sections = sections;
         }
 
-        public SectionedListTableViewSource(IImmutableList<TModel> section)
+        public SectionedListTableViewSource(IImmutableList<TModel> items)
         {
-            this.items = ImmutableList.Create(section);
+            this.sections = ImmutableList.Create(items);
         }
 
-        public void SetItems(IImmutableList<IImmutableList<TModel>> items)
+        public void SetItems(IImmutableList<IImmutableList<TModel>> sections)
         {
-            this.items = items;
+            this.sections = sections;
         }
 
-        public void SetItems(IImmutableList<TModel> section)
+        public void SetItems(IImmutableList<TModel> items)
         {
-            this.items = ImmutableList.Create(section);
+            this.sections = ImmutableList.Create(items);
         }
 
         public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
         {
-            return ConfigureCell(this, tableView, indexPath, items[indexPath.Section][indexPath.Row]);
+            return ConfigureCell(this, tableView, indexPath, sections[indexPath.Section][indexPath.Row]);
         }
 
         public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
         {
             tableView.DeselectRow(indexPath, true);
-            OnItemTapped?.Invoke(this, items[indexPath.Section][indexPath.Row]);
+            OnItemTapped?.Invoke(this, sections[indexPath.Section][indexPath.Row]);
         }
 
         public override nint NumberOfSections(UITableView tableView)
-            => items.Count;
+            => sections.Count;
 
         public override nint RowsInSection(UITableView tableview, nint section)
-            => items[(int)section].Count;
+            => sections[(int)section].Count;
 
         public override UIView GetViewForHeader(UITableView tableView, nint section)
             => ViewForHeaderInSection(this, tableView, (int)section);

@@ -62,7 +62,7 @@ namespace Toggl.Daneel.ViewControllers.Calendar
                 .DisposedBy(DisposeBag);
 
             ViewModel.Calendars
-                .Subscribe(TableView.Rx().Items(source))
+                .Subscribe(TableView.Rx().Sections(source))
                 .DisposedBy(DisposeBag);
         }
 

@@ -46,7 +46,7 @@ namespace Toggl.Daneel.ViewSources
         private UIView viewForHeaderInSection(SectionedListTableViewSource<SelectableUserCalendarViewModel> source, UITableView tableView, int section)
         {
             var header = tableView.DequeueReusableHeaderFooterView(UserCalendarListHeaderViewCell.Identifier) as UserCalendarListHeaderViewCell;
-            header.Item = items[(int)section].First().SourceName;
+            header.Item = sections[(int)section].First().SourceName;
             header.ContentView.BackgroundColor = SectionHeaderBackgroundColor;
             return header;
         }

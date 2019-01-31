@@ -14,7 +14,7 @@ namespace Toggl.Daneel.Extensions.Reactive
             where TCell : BaseTableViewCell<TModel>
             => new ReactiveTableViewBinder<TModel, TCell>(tableView.Base, dataSource);
 
-        public static IObserver<IImmutableList<IImmutableList<TModel>>> Items<TModel>(
+        public static IObserver<IImmutableList<IImmutableList<TModel>>> Sections<TModel>(
             this IReactive<UITableView> reactive, SectionedListTableViewSource<TModel> dataSource)
         {
             return Observer.Create<IImmutableList<IImmutableList<TModel>>>(list =>

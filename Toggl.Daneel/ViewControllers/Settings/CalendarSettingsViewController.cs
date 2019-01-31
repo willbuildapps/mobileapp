@@ -43,7 +43,7 @@ namespace Toggl.Daneel.ViewControllers.Settings
             UserCalendarsTableView.Source = source;
 
             ViewModel.Calendars
-                .Subscribe(UserCalendarsTableView.Rx().Items(source))
+                .Subscribe(UserCalendarsTableView.Rx().Sections(source))
                 .DisposedBy(DisposeBag);
 
             header.EnableCalendarAccessTapped
